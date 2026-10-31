@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --sky-top: #3f9fd6;
+        --sky-mid: #9ed4e8;
+        --sky-low: #f4e6c2;
+        --ink: #ffffff;
+        --accent: #ffd23f;
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--sky-top);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-display);
+        background: linear-gradient(
+          180deg,
+          var(--sky-top) 0%,
+          var(--sky-mid) 42%,
+          var(--sky-low) 62%,
+          #e9dcb8 100%
+        );
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 58%,
+          rgba(20, 10, 0, 0.38) 100%
+        );
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      .card {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 330px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .card .in {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .big {
+        display: block;
+        color: var(--ink);
+        font-size: 124px;
+        line-height: 1;
+        -webkit-text-stroke: 22px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 12px 0 var(--stroke);
+      }
+      .mid {
+        display: block;
+        color: var(--ink);
+        font-size: 84px;
+        line-height: 1.05;
+        -webkit-text-stroke: 18px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 10px 0 var(--stroke);
+      }
+      .yellow {
+        color: var(--accent);
+      }
+      .chip {
+        display: block;
+        background: var(--accent);
+        color: var(--stroke);
+        font-size: 54px;
+        padding: 14px 34px 10px;
+        border: 8px solid var(--stroke);
+        box-shadow: 0 10px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1130px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 66px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      #mark {
+        position: absolute;
+        top: 196px;
+        right: 110px;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 40px;
+        line-height: 1;
+        letter-spacing: 0.02em;
+        -webkit-text-stroke: 8px #1b1b1b;
+        paint-order: stroke fill;
+        text-shadow: 0 4px 0 #1b1b1b;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="25"
+      data-width="1080"
+      data-height="1920"
+    >
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="25"
+        data-track-index="0"
+      ></canvas>
+      <div id="vignette" class="clip" data-start="0" data-duration="25" data-track-index="1"></div>
+
+      <div id="hook" class="card clip" data-start="0" data-duration="3.6" data-track-index="2">
+        <div class="in" id="hook-in">
+          <span class="big">PUERTA</span>
+          <span class="big yellow">SECRETA</span>
+          <span class="chip">NADIE LA ENCUENTRA</span>
+        </div>
+      </div>
+      <div id="step1" class="card clip" data-start="3.7" data-duration="3.9" data-track-index="2">
+        <div class="in" id="step1-in">
+          <span class="chip">PASO 1</span>
+          <span class="mid">ROMPE<br />2 BLOQUES</span>
+        </div>
+      </div>
+      <div id="step2" class="card clip" data-start="7.7" data-duration="3.3" data-track-index="2">
+        <div class="in" id="step2-in">
+          <span class="chip">PASO 2</span>
+          <span class="mid">PON<br />2 CARTELES</span>
+        </div>
+      </div>
+      <div id="step3" class="card clip" data-start="11.1" data-duration="4.2" data-track-index="2">
+        <div class="in" id="step3-in">
+          <span class="chip">PASO 3</span>
+          <span class="mid">CUADRO<br />ENCIMA</span>
+        </div>
+      </div>
+      <div id="walk" class="card clip" data-start="15.4" data-duration="2.8" data-track-index="2">
+        <div class="in" id="walk-in">
+          <span class="big">¡PASA</span>
+          <span class="big yellow">DIRECTO!</span>
+        </div>
+      </div>
+      <div id="outro" class="card clip" data-start="18.4" data-duration="6.6" data-track-index="2">
+        <div class="in" id="outro-in">
+          <span class="big yellow">BOTÍN</span>
+          <span class="big">A SALVO</span>
+          <span class="chip" id="follow">SÍGUEME PARA MÁS</span>
+        </div>
+      </div>
+
+      <div id="cap0" class="cap clip" data-start="0.15" data-duration="2.13" data-track-index="7">
+        <span>¿QUIERES UNA PUERTA SECRETA</span>
+      </div>
+      <div id="cap1" class="cap clip" data-start="2.28" data-duration="1.15" data-track-index="7">
+        <span>QUE NADIE PUEDA ENCONTRAR?</span>
+      </div>
+      <div id="cap3" class="cap clip" data-start="3.7" data-duration="1.04" data-track-index="7">
+        <span>PASO UNO</span>
+      </div>
+      <div id="cap4" class="cap clip" data-start="4.74" data-duration="1.6" data-track-index="7">
+        <span>ROMPE DOS BLOQUES</span>
+      </div>
+      <div id="cap5" class="cap clip" data-start="6.34" data-duration="1.28" data-track-index="7">
+        <span>DE TU PARED</span>
+      </div>
+      <div id="cap6" class="cap clip" data-start="7.7" data-duration="0.82" data-track-index="7">
+        <span>PASO DOS</span>
+      </div>
+      <div id="cap7" class="cap clip" data-start="8.52" data-duration="2.38" data-track-index="7">
+        <span>PON UN CARTEL EN CADA HUECO</span>
+      </div>
+      <div id="cap9" class="cap clip" data-start="11.1" data-duration="1.08" data-track-index="7">
+        <span>PASO TRES</span>
+      </div>
+      <div id="cap10" class="cap clip" data-start="12.18" data-duration="1.24" data-track-index="7">
+        <span>CUELGA UN CUADRO</span>
+      </div>
+      <div id="cap11" class="cap clip" data-start="13.42" data-duration="1.92" data-track-index="7">
+        <span>ENCIMA DE LOS CARTELES</span>
+      </div>
+      <div id="cap13" class="cap clip" data-start="16.2" data-duration="0.48" data-track-index="7">
+        <span>Y AHORA...</span>
+      </div>
+      <div id="cap14" class="cap clip" data-start="16.68" data-duration="1.3" data-track-index="7">
+        <span>¡ATRAVIÉSALO</span>
+      </div>
+      <div id="cap15" class="cap clip" data-start="17.98" data-duration="1.18" data-track-index="7">
+        <span>COMO SI NADA!</span>
+      </div>
+      <div id="cap16" class="cap clip" data-start="19.5" data-duration="1.72" data-track-index="7">
+        <span>TU BOTÍN ESTÁ A SALVO</span>
+      </div>
+      <div id="cap18" class="cap clip" data-start="21.22" data-duration="1.05" data-track-index="7">
+        <span>SÍGUEME PARA MÁS</span>
+      </div>
+      <div id="cap19" class="cap clip" data-start="22.27" data-duration="1.63" data-track-index="7">
+        <span>CONSTRUCCIONES SECRETAS</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="25" data-track-index="3">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="25" data-track-index="4"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="25"
+        data-track-index="5"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="25"
+        data-track-index="6"
+        data-volume="0.45"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="25"
+        data-track-index="8"
+        data-volume="0.16"
+        data-fade-out="1.5"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      const pop = (sel, at) =>
+        tl.fromTo(
+          sel,
+          { scale: 0.2, opacity: 0, y: 40 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.32, ease: "back.out(2.6)" },
+          at,
+        );
+      const out = (sel, at) =>
+        tl.to(sel, { scale: 0.85, opacity: 0, y: -30, duration: 0.18, ease: "power2.in" }, at);
+
+      // Hook is on screen at frame 0 (thumbnail), then punches on "secreta".
+      tl.fromTo(
+        "#hook-in",
+        { scale: 1 },
+        { scale: 1.08, duration: 0.12, ease: "power2.out", yoyo: true, repeat: 1 },
+        1.15,
+      );
+      out("#hook-in", 3.4);
+      pop("#step1-in", 3.72);
+      out("#step1-in", 7.4);
+      pop("#step2-in", 7.72);
+      out("#step2-in", 10.8);
+      pop("#step3-in", 11.12);
+      out("#step3-in", 15.1);
+      pop("#walk-in", 15.42);
+      out("#walk-in", 18.0);
+      pop("#outro-in", 18.5);
+      tl.fromTo(
+        "#follow",
+        { scale: 1 },
+        { scale: 1.1, duration: 0.2, ease: "power2.inOut", yoyo: true, repeat: 3 },
+        21.2,
+      );
+      // Captions: quick pop on each group.
+      document.querySelectorAll(".cap").forEach((c) => {
+        const at = parseFloat(c.dataset.start);
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 16 },
+          { scale: 1, y: 0, duration: 0.14, ease: "back.out(3)" },
+          at,
+        );
+      });
+      // White flash as the camera dives through the painting.
+      tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.85, duration: 0.08, ease: "none" }, 17.55);
+      tl.to("#flash", { opacity: 0, duration: 0.35, ease: "power2.out" }, 17.63);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "./lib/three.module.js";
+
+      // ---------- helpers ----------
+      function mulberry32(a) {
+        return function () {
+          a |= 0;
+          a = (a + 0x6d2b79f5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const lerp = (a, b, k) => a + (b - a) * k;
+      const smooth = (k) => k * k * (3 - 2 * k);
+      const easeOutBack = (k) => {
+        const c1 = 2.2,
+          c3 = c1 + 1;
+        return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+      };
+      const prog = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+
+      // ---------- pixel textures (original, procedural, 16px grid) ----------
+      function finish(c, repeat = false) {
+        const t = new THREE.CanvasTexture(c);
+        t.magFilter = THREE.NearestFilter;
+        t.minFilter = THREE.NearestFilter;
+        t.colorSpace = THREE.SRGBColorSpace;
+        if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        return t;
+      }
+      function pixelTex(w, h, seed, fn, repeat = true) {
+        const c = document.createElement("canvas");
+        c.width = w;
+        c.height = h;
+        const g = c.getContext("2d");
+        const r = mulberry32(seed);
+        for (let y = 0; y < h; y++)
+          for (let x = 0; x < w; x++) {
+            const col = fn(x, y, r);
+            if (!col) continue;
+            g.fillStyle = col;
+            g.fillRect(x, y, 1, 1);
+          }
+        return finish(c, repeat);
+      }
+      // Clustered noise: 2x2-ish patches, like hand-painted block art.
+      function clusterField(seed, w = 16, h = 16) {
+        const r = mulberry32(seed);
+        const coarse = [];
+        for (let i = 0; i < 64; i++) coarse.push(r());
+        const fine = [];
+        for (let i = 0; i < w * h; i++) fine.push(r());
+        return (x, y) =>
+          0.65 * coarse[((y >> 1) % 8) * 8 + ((x >> 1) % 8)] + 0.35 * fine[y * w + x];
+      }
+      const pal = (arr, v) => arr[Math.min(arr.length - 1, Math.floor(v * arr.length))];
+      const GRASS = ["#3f8f2c", "#4d9f33", "#5aae3b", "#67bd44", "#77cc4f"];
+      const DIRT = ["#5c3a20", "#6e4628", "#7d5231", "#8c5f3a", "#9a6c44"];
+      const gf = clusterField(11),
+        df = clusterField(13);
+      const grassTop = pixelTex(16, 16, 11, (x, y) => pal(GRASS, gf(x, y)));
+      const grassSide = pixelTex(16, 16, 12, (x, y) => {
+        const lip = 3 + ((x * 5 + 3) % 7 < 3 ? 1 : 0) + (x % 5 === 0 ? 1 : 0);
+        if (y < lip) return pal(GRASS, gf(x, y + 3));
+        return pal(DIRT, df(x, y));
+      });
+      const dirt = pixelTex(16, 16, 13, (x, y) => pal(DIRT, df(x, y)));
+      const STONE = ["#6f7076", "#7e7f86", "#8c8d94", "#999aa1", "#a7a8af"];
+      const sf = clusterField(14);
+      const stone = pixelTex(16, 16, 14, (x, y) => {
+        const row = Math.floor(y / 8);
+        const off = row % 2 ? 8 : 0;
+        const bx = (x + off) % 16;
+        const ly = y % 8;
+        if (ly === 7 || bx === 15) return "#4b4b51"; // mortar
+        if (ly === 0 || bx === 0) return "#b6b7be"; // lit edge
+        if (ly === 6 || bx === 14) return "#66676d"; // shadow edge
+        return pal(STONE, sf(x, y));
+      });
+      const PLANK = ["#8f6a3a", "#9e7643", "#ad834c", "#bb9157", "#c69c60"];
+      const pf = clusterField(15);
+      const planks = pixelTex(16, 16, 15, (x, y) => {
+        const ly = y % 4;
+        if (ly === 3) return "#5a3d1e";
+        if (ly === 0) return "#c9a165";
+        const seam = Math.floor(y / 4) % 2 ? 4 : 11;
+        if (x === seam) return "#6d4a26";
+        return pal(PLANK, pf(x, y) * 0.8 + (x % 3 === 0 ? 0.1 : 0));
+      });
+      const signTex = pixelTex(16, 16, 16, (x, y) => {
+        if (x === 0 || y === 0 || x === 15 || y === 15) return "#5a3d1e";
+        if ((y === 5 || y === 8 || y === 11) && x > 2 && x < 13 - (y === 11 ? 4 : 0))
+          return "#2b1d10";
+        return pal(["#c29b62", "#caa46b", "#d3ae75"], pf(x, y));
+      });
+      // Original pixel painting: sunset over block hills.
+      const painting = pixelTex(16, 32, 17, (x, y, r) => {
+        if (x === 0 || y === 0 || x === 15 || y === 31) return "#3b2410";
+        if (x === 1 || y === 1 || x === 14 || y === 30) return "#8b5a2b";
+        const sx = x - 10,
+          sy = y - 12;
+        if (sx * sx + sy * sy < 9) return y < 12 ? "#fff1a8" : "#ffd65c";
+        const hill = 17 + Math.round(2 * Math.sin(x * 0.9));
+        if (y > 24) return r() < 0.5 ? "#2f7d32" : "#2a7030";
+        if (y > hill) return r() < 0.5 ? "#3f8f3a" : "#4a9b43";
+        if (y < 7) return "#3b3f9c";
+        if (y < 11) return "#7b4fb3";
+        if (y < 15) return "#e0619a";
+        return "#ff9a52";
+      });
+      // Chest: dark outline, plank bands, latch.
+      const chestTex = (withLatch, seed) =>
+        pixelTex(16, 16, seed, (x, y) => {
+          if (x === 0 || x === 15 || y === 0 || y === 15) return "#24160a";
+          if (y === 5 || y === 6) return y === 5 ? "#24160a" : "#3b2410";
+          if (withLatch && x >= 7 && x <= 8 && y >= 4 && y <= 8)
+            return y === 8 || x === 8 ? "#8d8d8d" : "#d9d9d9";
+          if (y % 4 === 2 && y > 6) return "#6b4318";
+          return pal(["#8a5422", "#9a6029", "#a96d31", "#b77a3a"], pf(x, y));
+        });
+      const chestFront = chestTex(true, 18),
+        chestSide = chestTex(false, 27);
+      const gold = pixelTex(16, 16, 19, (x, y) => {
+        if (x === 0 || y === 0) return "#fff8b8";
+        if (x === 15 || y === 15) return "#b88310";
+        if (x === y || x === y + 1) return "#fff2a0";
+        return pal(["#e9b822", "#f2c92a", "#f8d74a", "#fbe063"], sf(x, y));
+      });
+      const gem = pixelTex(16, 16, 20, (x, y) => {
+        if (x === 0 || y === 0) return "#d4fff6";
+        if (x === 15 || y === 15) return "#127a68";
+        if (x === y) return "#c8fff4";
+        return pal(["#2fcfb0", "#3fd9bb", "#57e6c9", "#74f2d8"], sf(x, y));
+      });
+      const LEAF = ["#1f5418", "#2b6a22", "#37802c", "#449436", "#52a540"];
+      const lf = clusterField(21);
+      const leaves = pixelTex(16, 16, 21, (x, y) => pal(LEAF, lf(x, y)));
+      const log = pixelTex(16, 16, 22, (x, y) =>
+        x % 4 === 0 ? "#3e2914" : pal(["#5a3d1e", "#664624", "#72502a"], df(x, y)),
+      );
+      const crackTex = [1, 2, 3].map((stage) => {
+        const c = document.createElement("canvas");
+        c.width = c.height = 16;
+        const g = c.getContext("2d");
+        g.fillStyle = "rgba(20,20,24,0.9)";
+        const r = mulberry32(100 + stage);
+        for (let i = 0; i < stage * 3; i++) {
+          let x = 8,
+            y = 8;
+          const dx = r() * 2 - 1,
+            dy = r() * 2 - 1;
+          for (let s = 0; s < 3 + stage * 2; s++) {
+            g.fillRect(Math.round(x), Math.round(y), 1, 1);
+            x += dx + (r() - 0.5) * 0.8;
+            y += dy + (r() - 0.5) * 0.8;
+          }
+        }
+        return finish(c);
+      });
+      // Flowers and tall grass (cross sprites).
+      const sprite = (seed, fn) => pixelTex(16, 16, seed, fn, false);
+      const tallGrass = sprite(40, (x, y, r) => {
+        const blade = [2, 5, 7, 10, 13].find((b) => Math.abs(x - b) < 1 && y > 3 + ((b * 3) % 6));
+        return blade !== undefined ? pal(GRASS, r()) : null;
+      });
+      const flower = (seed, petal, center) =>
+        sprite(seed, (x, y) => {
+          if (x === 7 && y > 7) return "#3f8f2c";
+          if (y === 11 && (x === 6 || x === 8)) return "#4d9f33";
+          const dx = x - 7,
+            dy = y - 5;
+          if (dx === 0 && dy === 0) return center;
+          if (Math.abs(dx) + Math.abs(dy) <= 2) return petal;
+          return null;
+        });
+      const flowers = [
+        flower(41, "#e8423c", "#2b1d10"),
+        flower(42, "#f5d33a", "#e08a1a"),
+        flower(43, "#b77be0", "#f5e6ff"),
+        flower(44, "#ffffff", "#f5d33a"),
+      ];
+
+      // ---------- the mascot: LilPipe's skin ----------
+      const SKIN = "#c98f6e",
+        SKIN_D = "#b07a5b",
+        SKIN_L = "#d9a283",
+        HAIR = "#2a1c12",
+        HAIR_L = "#3b2818";
+      const headFront = pixelTex(8, 8, 50, (x, y, r) => {
+        if (y < 2) return r() < 0.3 ? HAIR_L : HAIR;
+        if (y === 2) return x === 0 || x === 7 ? HAIR : SKIN;
+        if (y === 3) return x === 1 || x === 2 || x === 5 || x === 6 ? "#f2a33a" : "#121212";
+        if (y === 4) {
+          if (x === 1 || x === 2 || x === 5 || x === 6) return "#c9741c";
+          return x === 0 || x === 7 ? SKIN_D : SKIN;
+        }
+        if (y === 5) return x === 3 || x === 4 ? SKIN_D : SKIN;
+        if (y === 6) return x === 3 || x === 4 ? "#a4584a" : SKIN;
+        return SKIN_D;
+      });
+      const headSide = pixelTex(8, 8, 51, (x, y, r) => {
+        if (y < 3 || (y < 5 && x > 4)) return r() < 0.3 ? HAIR_L : HAIR;
+        if (y === 3) return "#121212";
+        return SKIN;
+      });
+      const headBack = pixelTex(8, 8, 52, (x, y, r) =>
+        y < 6 ? (r() < 0.3 ? HAIR_L : HAIR) : SKIN_D,
+      );
+      const headTop = pixelTex(8, 8, 53, (x, y, r) => (r() < 0.3 ? HAIR_L : HAIR));
+      const torsoFront = pixelTex(8, 12, 54, (x, y) => {
+        if (y === 10) return x === 3 || x === 4 ? "#6b6b6b" : "#151515"; // belt + buckle
+        if (y === 11) return "#e6e6ea"; // shorts waistband
+        if (y === 2 && (x === 2 || x === 5)) return "#a4584a";
+        if (y === 3 && x !== 0 && x !== 7) return x === 3 || x === 4 ? SKIN : SKIN_D; // pec line
+        if ((y === 5 || y === 7) && x > 1 && x < 6) return SKIN_D; // abs
+        if (y > 4 && y < 10 && (x === 3 || x === 4) && (x + y) % 2 === 0) return SKIN_D;
+        if (x === 0 || x === 7) return SKIN_D;
+        if (y < 2) return SKIN_L;
+        return SKIN;
+      });
+      const torsoBack = pixelTex(8, 12, 55, (x, y) =>
+        y === 10 ? "#151515" : y === 11 ? "#e6e6ea" : x === 3 || x === 4 ? SKIN_D : SKIN,
+      );
+      const torsoSide = pixelTex(4, 12, 56, (x, y) =>
+        y === 10 ? "#151515" : y === 11 ? "#e6e6ea" : SKIN,
+      );
+      const limb = (seed, shorts) =>
+        pixelTex(4, 12, seed, (x, y) => {
+          if (shorts && y < 5) return y === 4 ? "#c9c9cf" : x === 0 ? "#d4d4da" : "#ececf0";
+          if (y === 11) return SKIN_D;
+          if (x === 3) return SKIN_D;
+          if (x === 0) return SKIN_L;
+          return SKIN;
+        });
+      const legTex = limb(57, true),
+        armTex = limb(58, false);
+
+      const M = (map, extra = {}) => new THREE.MeshLambertMaterial({ map, ...extra });
+      const grassMats = [
+        M(grassSide),
+        M(grassSide),
+        M(grassTop),
+        M(dirt),
+        M(grassSide),
+        M(grassSide),
+      ];
+
+      // ---------- scene ----------
+      const canvas = document.getElementById("world");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+        preserveDrawingBuffer: true,
+      });
+      renderer.setPixelRatio(1);
+      renderer.setSize(1080, 1920, false);
+      renderer.setClearColor(0x000000, 0);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog("#d8e6d2", 20, 60);
+      const camera = new THREE.PerspectiveCamera(50, 1080 / 1920, 0.05, 150);
+
+      scene.add(new THREE.HemisphereLight("#cfe8ff", "#6b5a3a", 1.0));
+      const sun = new THREE.DirectionalLight("#ffe0a8", 3.0);
+      sun.position.set(9, 10, 8);
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(2048, 2048);
+      sun.shadow.bias = -0.0008;
+      Object.assign(sun.shadow.camera, {
+        left: -12,
+        right: 12,
+        top: 12,
+        bottom: -12,
+        near: 1,
+        far: 40,
+      });
+      scene.add(sun);
+
+      const box = new THREE.BoxGeometry(1, 1, 1);
+      function block(mat, x, y, z) {
+        const m = new THREE.Mesh(box, mat);
+        m.position.set(x, y, z);
+        m.castShadow = m.receiveShadow = true;
+        scene.add(m);
+        return m;
+      }
+
+      // Ground.
+      const groundTop = grassTop.clone();
+      groundTop.repeat.set(60, 60);
+      groundTop.needsUpdate = true;
+      const ground = new THREE.Mesh(new THREE.BoxGeometry(60, 1, 60), [
+        M(dirt),
+        M(dirt),
+        M(groundTop),
+        M(dirt),
+        M(dirt),
+        M(dirt),
+      ]);
+      ground.position.set(0, -0.5, 0);
+      ground.receiveShadow = true;
+      scene.add(ground);
+      const rg = mulberry32(5);
+      for (let i = 0; i < 22; i++) {
+        const x = Math.round(rg() * 24 - 12),
+          z = Math.round(rg() * 12 + 2);
+        if (Math.abs(x) < 4 && z < 8) continue;
+        block(grassMats, x, 0.5, z);
+      }
+
+      // Distant terraced block mountains (fogged), like the references' skyline.
+      const mountainMats = ["#4f8f3a", "#5c9c42", "#6f8f76", "#8a9a8c"].map(
+        (c) => new THREE.MeshLambertMaterial({ color: c }),
+      );
+      function mountain(cx, cz, layers, base, seed) {
+        const r = mulberry32(seed);
+        for (let i = 0; i < layers; i++) {
+          const w = base * (1 - i / layers) + 1;
+          const m = new THREE.Mesh(
+            new THREE.BoxGeometry(w + r() * 2, 1.4, w * 0.8 + r() * 2),
+            mountainMats[i > layers * 0.65 ? 3 : i > layers * 0.45 ? 2 : i % 2],
+          );
+          m.position.set(cx + (r() - 0.5) * 1.5, i * 1.4 + 0.7, cz + (r() - 0.5) * 1.5);
+          scene.add(m);
+        }
+      }
+      mountain(-16, -34, 14, 22, 61);
+      mountain(10, -40, 18, 26, 62);
+      mountain(30, -30, 10, 16, 63);
+      mountain(-36, -26, 9, 14, 64);
+
+      // Trees.
+      const logMat = M(log),
+        leafMat = M(leaves);
+      function tree(x, z, h) {
+        for (let y = 0; y < h; y++) block(logMat, x, y + 0.5, z);
+        for (let dx = -2; dx <= 2; dx++)
+          for (let dz = -2; dz <= 2; dz++)
+            for (let dy = 0; dy < 2; dy++) {
+              if (Math.abs(dx) === 2 && Math.abs(dz) === 2) continue;
+              block(leafMat, x + dx, h - 0.5 + dy, z + dz);
+            }
+        [
+          [0, 0],
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ].forEach(([dx, dz]) => block(leafMat, x + dx, h + 1.5, z + dz));
+      }
+      tree(-7, -2, 4);
+      tree(7, -1, 5);
+      tree(-11, 6, 4);
+      tree(12, 8, 4);
+      tree(-14, -10, 5);
+      tree(15, -9, 4);
+
+      // Flat translucent clouds.
+      const cloudMat = new THREE.MeshBasicMaterial({
+        color: "#fffbe8",
+        fog: false,
+        transparent: true,
+        opacity: 0.88,
+      });
+      const cloudX = [-8, 6, 16, -18, 2];
+      const clouds = [];
+      [
+        [-8, 14, -14, 6],
+        [6, 15, -18, 8],
+        [16, 13, -10, 5],
+        [-18, 16, -20, 7],
+        [2, 18, -26, 9],
+      ].forEach(([x, y, z, w]) => {
+        const c = new THREE.Mesh(new THREE.BoxGeometry(w, 0.8, 3), cloudMat);
+        c.position.set(x, y, z);
+        scene.add(c);
+        clouds.push(c);
+      });
+
+      // Flowers and tall grass in front of the house (path kept clear).
+      const spriteGeo = new THREE.PlaneGeometry(0.8, 0.8);
+      const rf = mulberry32(9);
+      const spriteMats = [tallGrass, ...flowers].map(
+        (map) =>
+          new THREE.MeshLambertMaterial({
+            map,
+            transparent: true,
+            alphaTest: 0.5,
+            side: THREE.DoubleSide,
+          }),
+      );
+      for (let i = 0; i < 70; i++) {
+        const x = rf() * 14 - 7,
+          z = rf() * 7 + 0.6;
+        if (x > -0.8 && x < 3.4 && z < 4.2) continue;
+        const mat = spriteMats[rf() < 0.55 ? 0 : 1 + Math.floor(rf() * 4)];
+        for (let k = 0; k < 2; k++) {
+          const p = new THREE.Mesh(spriteGeo, mat);
+          p.position.set(Math.round(x * 2) / 2, 0.4, Math.round(z * 2) / 2);
+          p.rotation.y = Math.PI / 4 + k * (Math.PI / 2);
+          scene.add(p);
+        }
+      }
+
+      // House: stone front wall (front face z=0), room behind.
+      const stoneMat = M(stone),
+        plankMat = M(planks);
+      const holeA = [0, 0.5, -0.5],
+        holeB = [0, 1.5, -0.5];
+      const wallBlocks = {};
+      for (let x = -3; x <= 3; x++)
+        for (let y = 0; y < 4; y++) wallBlocks[x + ":" + y] = block(stoneMat, x, y + 0.5, -0.5);
+      for (let z = -1; z >= -6; z--)
+        for (let y = 0; y < 4; y++) {
+          block(stoneMat, -3, y + 0.5, z - 0.5);
+          block(stoneMat, 3, y + 0.5, z - 0.5);
+        }
+      for (let x = -2; x <= 2; x++) for (let y = 0; y < 4; y++) block(stoneMat, x, y + 0.5, -6.5);
+      for (let x = -3; x <= 3; x++) for (let z = 0; z >= -6; z--) block(plankMat, x, 4.5, z - 0.5);
+      // Roof trim and corner logs for a nicer silhouette.
+      for (let x = -4; x <= 4; x++) block(logMat, x, 4.5, 0.5);
+      const floorTex = planks.clone();
+      floorTex.repeat.set(5, 6);
+      floorTex.needsUpdate = true;
+      const floor = new THREE.Mesh(new THREE.BoxGeometry(5, 0.02, 6), M(floorTex));
+      floor.position.set(0, 0.011, -3.5);
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // Front torches.
+      const torchLights = [];
+      function torch(x, y, z, light) {
+        const stick = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), M(log));
+        stick.position.set(x, y, z);
+        const flame = new THREE.Mesh(
+          new THREE.BoxGeometry(0.16, 0.16, 0.16),
+          new THREE.MeshBasicMaterial({ color: "#ffcf4a" }),
+        );
+        flame.position.set(x, y + 0.32, z);
+        scene.add(stick, flame);
+        if (light) {
+          const pl = new THREE.PointLight("#ffb347", 6, 9, 1);
+          pl.position.set(x * 0.85, y + 0.4, z);
+          scene.add(pl);
+          torchLights.push(pl);
+        }
+      }
+      torch(-1.4, 2.6, 0.12, false);
+      torch(1.4, 2.6, 0.12, false);
+      torch(-2.45, 2.2, -3, true);
+      torch(2.45, 2.2, -3, true);
+
+      // Secret room: chest + loot.
+      const cF = M(chestFront),
+        cS = M(chestSide);
+      const chest = new THREE.Group();
+      const chestBase = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.6, 0.9), [
+        cS,
+        cS,
+        cS,
+        cS,
+        cF,
+        cS,
+      ]);
+      chestBase.position.y = 0.3;
+      const lid = new THREE.Group();
+      const lidMesh = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.25, 0.9), cS);
+      lidMesh.position.set(0, 0.125, 0.45);
+      lid.add(lidMesh);
+      lid.position.set(0, 0.6, -0.45);
+      const glow = new THREE.Mesh(
+        new THREE.BoxGeometry(0.8, 0.02, 0.8),
+        new THREE.MeshBasicMaterial({ color: "#ffe27a" }),
+      );
+      glow.position.y = 0.59;
+      chest.add(chestBase, lid, glow);
+      chest.position.set(0, 0, -5);
+      scene.add(chest);
+      const goldMat = M(gold, { emissive: "#5a4100" }),
+        gemMat = M(gem, { emissive: "#0b4a3d" });
+      const loot = [];
+      [
+        [-1.6, 0.5, -5.4, goldMat],
+        [-1.6, 1.5, -5.4, goldMat],
+        [-1.0, 0.5, -5.5, gemMat],
+        [1.4, 0.5, -5.3, goldMat],
+        [1.8, 0.5, -4.4, gemMat],
+        [-1.8, 0.5, -4.3, goldMat],
+      ].forEach(([x, y, z, m]) => {
+        const b = block(m, x, y, z);
+        b.userData.base = y - 0.5;
+        loot.push(b);
+      });
+      const roomFill = new THREE.PointLight("#ffd27a", 0, 7, 1);
+      roomFill.position.set(0, 1.4, -4.4);
+      scene.add(roomFill);
+
+      // Signs and painting.
+      const signMat = M(signTex);
+      const signGeo = new THREE.BoxGeometry(0.86, 0.56, 0.08);
+      const signA = new THREE.Mesh(signGeo, signMat);
+      const signB = new THREE.Mesh(signGeo, signMat);
+      signA.castShadow = signB.castShadow = true;
+      scene.add(signA, signB);
+      const paintMat = new THREE.MeshLambertMaterial({ map: painting });
+      const pl = M(planks);
+      const paint = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.06), [
+        pl,
+        pl,
+        pl,
+        pl,
+        paintMat,
+        pl,
+      ]);
+      paint.castShadow = true;
+      scene.add(paint);
+
+      // Crack overlay + particles.
+      const crackMat = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false });
+      const crack = new THREE.Mesh(new THREE.BoxGeometry(1.01, 1.01, 1.01), crackMat);
+      scene.add(crack);
+      const partGeo = new THREE.BoxGeometry(0.14, 0.14, 0.14);
+      function burst(seed, origin, t0, mat, n, speed) {
+        const r = mulberry32(seed);
+        const ps = [];
+        for (let i = 0; i < n; i++) {
+          const m = new THREE.Mesh(partGeo, mat);
+          m.visible = false;
+          scene.add(m);
+          ps.push({
+            m,
+            p: [
+              origin[0] + (r() - 0.5) * 0.6,
+              origin[1] + (r() - 0.5) * 0.6,
+              origin[2] + 0.3 + r() * 0.3,
+            ],
+            v: [(r() - 0.5) * speed, 1.5 + r() * speed, 0.6 + r() * speed * 0.6],
+            spin: r() * 8,
+            life: 0.7 + r() * 0.4,
+          });
+        }
+        return { t0, ps };
+      }
+      const dustMat = new THREE.MeshLambertMaterial({ color: "#e8e2d4" });
+      const sparkMat = new THREE.MeshBasicMaterial({ color: "#fff3a0" });
+      const bursts = [
+        burst(31, holeB, 5.5, stoneMat, 16, 2.4),
+        burst(32, holeA, 6.5, stoneMat, 16, 2.4),
+        burst(33, [0, 1.5, -0.2], 9.1, dustMat, 8, 1.2),
+        burst(34, [0, 0.5, -0.2], 10.0, dustMat, 8, 1.2),
+        burst(35, [0, 1, 0.1], 13.6, dustMat, 12, 1.6),
+        burst(36, [0, 1.2, -4.9], 19.2, sparkMat, 22, 2.2),
+      ];
+      function renderBursts(t) {
+        for (const b of bursts) {
+          const dt = t - b.t0;
+          for (const q of b.ps) {
+            const alive = dt >= 0 && dt < q.life;
+            q.m.visible = alive;
+            if (!alive) continue;
+            const y = q.p[1] + q.v[1] * dt - 4.9 * dt * dt;
+            q.m.position.set(q.p[0] + q.v[0] * dt, Math.max(0.07, y), q.p[2] + q.v[2] * dt);
+            q.m.rotation.set(q.spin * dt, q.spin * dt * 0.7, 0);
+            q.m.scale.setScalar(Math.max(0.01, 1 - smooth(dt / q.life)));
+          }
+        }
+      }
+
+      // Mascot rig (box order: +x, -x, +y, -y, +z front, -z back).
+      const hero = new THREE.Group();
+      const part = (w, h, d, mats, x, y, z, pivotTop = false) => {
+        const g = new THREE.Group();
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mats);
+        mesh.castShadow = true;
+        mesh.position.y = pivotTop ? -h / 2 : 0;
+        g.add(mesh);
+        g.position.set(x, y, z);
+        hero.add(g);
+        return g;
+      };
+      const hS = M(headSide),
+        skinFlat = new THREE.MeshLambertMaterial({ color: SKIN });
+      const head = part(
+        0.5,
+        0.5,
+        0.5,
+        [hS, hS, M(headTop), skinFlat, M(headFront), M(headBack)],
+        0,
+        1.55,
+        0,
+      );
+      const tS = M(torsoSide);
+      part(0.5, 0.75, 0.25, [tS, tS, skinFlat, skinFlat, M(torsoFront), M(torsoBack)], 0, 0.925, 0);
+      const aM = M(armTex),
+        lM = M(legTex);
+      const armL = part(0.24, 0.72, 0.24, aM, -0.37, 1.29, 0, true);
+      const armR = part(0.24, 0.72, 0.24, aM, 0.37, 1.29, 0, true);
+      const legL = part(0.25, 0.62, 0.25, lM, -0.125, 0.6, 0, true);
+      const legR = part(0.25, 0.62, 0.25, lM, 0.125, 0.6, 0, true);
+      hero.scale.setScalar(0.95);
+      scene.add(hero);
+
+      // ---------- keyframes ----------
+      const camKeys = [
+        [0, [7.5, 5.5, 12.5], [0, 1.8, -2.5]],
+        [3.5, [3.0, 3.2, 8.5], [0, 1.4, -1]],
+        [4.2, [0.7, 1.3, 3.4], [0, 1.0, -0.4]],
+        [7.5, [0.3, 1.2, 3.0], [0, 1.0, -0.4]],
+        [8.1, [-0.8, 1.4, 2.9], [0, 1.0, -0.4]],
+        [10.9, [-0.5, 1.3, 2.6], [0, 1.0, -0.4]],
+        [11.6, [0, 1.6, 4.6], [0, 1.2, 0]],
+        [15.1, [0, 1.5, 4.0], [0, 1.1, 0]],
+        [15.8, [4.2, 2.6, 8.2], [0.8, 1.0, 0.8]],
+        [16.8, [2.0, 2.2, 6.2], [0.2, 1.0, 0.2]],
+        [17.2, [0, 1.6, 3.6], [0, 1.2, 0]],
+        [17.75, [0, 1.35, 0.3], [0, 1.1, -3]],
+        [18.4, [0.4, 2.0, -1.2], [-0.1, 1.3, -4.5]],
+        [25, [0.7, 2.2, -1.3], [-0.2, 1.4, -4.7]],
+      ];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      function sampleKeys(keys, t) {
+        let i = 0;
+        while (i < keys.length - 2 && t > keys[i + 1][0]) i++;
+        return [keys[i], keys[i + 1]];
+      }
+      function sampleCam(t) {
+        const [[ta, pa, la], [tb, pb, lb]] = sampleKeys(camKeys, t);
+        const k = smooth(prog(t, ta, tb));
+        return [v3(pa).lerp(v3(pb), k), v3(la).lerp(v3(lb), k)];
+      }
+      const shakes = [5.5, 6.5, 9.1, 10.0, 13.6];
+      const heroKeys = [
+        [15.4, 2.6, 3.4],
+        [16.4, 0.6, 1.8],
+        [16.9, 0, 1.2],
+        [17.9, 0, -2.2],
+        [18.7, -0.7, -4.0],
+      ];
+      function sampleHero(t) {
+        const [[ta, xa, za], [tb, xb, zb]] = sampleKeys(heroKeys, t);
+        const k = prog(t, ta, tb);
+        return [lerp(xa, xb, k), lerp(za, zb, k), Math.atan2(xb - xa, zb - za)];
+      }
+
+      function renderAt(t) {
+        const [pos, look] = sampleCam(t);
+        let sh = 0;
+        for (const s of shakes) if (t >= s && t < s + 0.22) sh = Math.max(sh, 1 - (t - s) / 0.22);
+        pos.x += Math.sin(t * 90) * 0.05 * sh;
+        pos.y += Math.cos(t * 77) * 0.05 * sh;
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = 50 - 4 * smooth(prog(t, 17.2, 17.75)) + 24 * smooth(prog(t, 17.75, 18.4));
+        camera.updateProjectionMatrix();
+
+        clouds.forEach((c, i) => (c.position.x = cloudX[i] + t * 0.25));
+
+        // Step 1: crack then break the two blocks (top first).
+        const top = wallBlocks["0:1"],
+          bot = wallBlocks["0:0"];
+        top.visible = t < 5.5;
+        bot.visible = t < 6.5;
+        top.position.x = bot.position.x = 0;
+        const crackOn = (t >= 5.0 && t < 5.5) || (t >= 6.0 && t < 6.5);
+        crack.visible = crackOn;
+        if (crackOn) {
+          const isTop = t < 5.5;
+          const k = isTop ? prog(t, 5.0, 5.5) : prog(t, 6.0, 6.5);
+          crackMat.map = crackTex[Math.min(2, Math.floor(k * 3))];
+          crackMat.needsUpdate = true;
+          crack.position.set(0, isTop ? 1.5 : 0.5, -0.5);
+          (isTop ? top : bot).position.x = Math.sin(t * 60) * 0.03 * k;
+        }
+
+        // Step 2: signs drop into the hole.
+        const sa = prog(t, 8.75, 9.1),
+          sb = prog(t, 9.65, 10.0);
+        signA.visible = t >= 8.75;
+        signB.visible = t >= 9.65;
+        signA.position.set(0, 1.55 + (1 - easeOutBack(sa)) * 0.9, -0.5);
+        signB.position.set(0, 0.55 + (1 - easeOutBack(sb)) * 0.9, -0.5);
+        signA.rotation.z = (1 - sa) * 0.6;
+        signB.rotation.z = -(1 - sb) * 0.6;
+
+        // Step 3: painting flies in and slaps on.
+        const pk = prog(t, 13.0, 13.6);
+        paint.visible = t >= 13.0;
+        const e = easeOutBack(pk);
+        paint.position.set(lerp(2.6, 0, e), lerp(3.4, 1, e), lerp(2.2, 0.035, smooth(pk)));
+        paint.rotation.set(0, (1 - pk) * 1.2, (1 - pk) * -0.8);
+        const squash =
+          t >= 13.6 && t < 13.9 ? 1 + 0.08 * Math.sin(prog(t, 13.6, 13.9) * Math.PI) : 1;
+        paint.scale.set(squash, 2 - squash, 1);
+
+        // Mascot walks in and through the painting.
+        hero.visible = t >= 15.4;
+        const [hx, hz, face] = sampleHero(t);
+        const walking = t >= 15.4 && t < 18.7;
+        const sw = walking ? Math.sin(t * 13) * 0.7 : 0;
+        hero.position.set(hx, walking ? Math.abs(Math.sin(t * 13)) * 0.05 : 0, hz);
+        hero.rotation.y = face;
+        legL.rotation.x = sw;
+        legR.rotation.x = -sw;
+        armL.rotation.x = -sw * 0.8;
+        armR.rotation.x = sw * 0.8;
+        armL.rotation.z = armR.rotation.z = 0;
+        const cheer = prog(t, 19.0, 19.3);
+        if (t >= 19.0) {
+          hero.position.y = t < 21.5 ? Math.max(0, Math.sin((t - 19.0) * 7)) * 0.25 : 0;
+          armL.rotation.z = -2.6 * cheer;
+          armR.rotation.z = 2.6 * cheer;
+          armL.rotation.x = armR.rotation.x = 0;
+          hero.rotation.y = lerp(face, 0.45, smooth(cheer));
+        }
+        head.rotation.y = t >= 18.7 && t < 19 ? Math.sin((t - 18.7) * 8) * 0.4 : 0;
+
+        // Room reveal.
+        const open = prog(t, 18.8, 19.2);
+        lid.rotation.x = -1.9 * easeOutBack(open);
+        glow.visible = t >= 18.9;
+        roomFill.intensity = 5 * smooth(prog(t, 18.8, 19.6));
+        loot.forEach((b, i) => {
+          b.rotation.y = t * 0.6 + i;
+          const floating = t > 19.2;
+          b.scale.setScalar(floating ? 0.6 : 1);
+          b.position.y = floating
+            ? 0.45 + Math.sin(t * 3 + i) * 0.08 + b.userData.base
+            : b.userData.base + 0.5;
+        });
+        torchLights.forEach((p, i) => (p.intensity = 6 + Math.sin(t * 11 + i * 2) * 0.6));
+
+        renderBursts(t);
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>

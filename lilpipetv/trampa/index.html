@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --sky-top: #3f9fd6;
+        --sky-mid: #9ed4e8;
+        --sky-low: #f4e6c2;
+        --ink: #ffffff;
+        --accent: #ffd23f;
+        --hot: #ff3b2f;
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--sky-top);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-display);
+        background: linear-gradient(
+          180deg,
+          var(--sky-top) 0%,
+          var(--sky-mid) 42%,
+          var(--sky-low) 62%,
+          #e9dcb8 100%
+        );
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(20, 10, 0, 0.45) 100%
+        );
+      }
+      #alarm {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 50%,
+          rgba(255, 40, 20, 0) 35%,
+          rgba(255, 30, 10, 0.6) 100%
+        );
+        opacity: 0;
+      }
+      #vhs {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        background:
+          repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 3px, rgba(0, 0, 0, 0) 3px 7px),
+          linear-gradient(180deg, rgba(40, 0, 80, 0.25), rgba(0, 60, 80, 0.25));
+      }
+      #vhs-band {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 120px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      #vhs-label {
+        position: absolute;
+        left: 90px;
+        top: 230px;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 64px;
+        color: #ffffff;
+        text-shadow:
+          4px 0 0 rgba(255, 0, 80, 0.8),
+          -4px 0 0 rgba(0, 220, 255, 0.8);
+      }
+      #impact {
+        position: absolute;
+        inset: 0;
+        background: #ffffff;
+        mix-blend-mode: difference;
+        opacity: 0;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      #part {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 200px;
+        display: flex;
+        justify-content: center;
+      }
+      .card {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .card .in {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .huge {
+        display: block;
+        color: var(--ink);
+        font-size: 176px;
+        line-height: 0.95;
+        -webkit-text-stroke: 28px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 14px 0 var(--stroke);
+      }
+      .big {
+        display: block;
+        color: var(--ink);
+        font-size: 128px;
+        line-height: 1;
+        -webkit-text-stroke: 24px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 12px 0 var(--stroke);
+      }
+      .mid {
+        display: block;
+        color: var(--ink);
+        font-size: 84px;
+        line-height: 1.05;
+        -webkit-text-stroke: 18px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 10px 0 var(--stroke);
+      }
+      .yellow {
+        color: var(--accent);
+      }
+      .hot {
+        color: var(--hot);
+      }
+      .chip {
+        display: block;
+        background: var(--accent);
+        color: var(--stroke);
+        font-size: 54px;
+        padding: 14px 34px 10px;
+        border: 8px solid var(--stroke);
+        box-shadow: 0 10px 0 var(--stroke);
+      }
+      .chip.red {
+        background: var(--hot);
+        color: #ffffff;
+      }
+      .stamp {
+        display: block;
+        color: var(--hot);
+        font-size: 168px;
+        line-height: 1;
+        padding: 6px 30px 0;
+        border: 16px solid var(--hot);
+        background: #ffffff;
+        box-shadow: 0 14px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1130px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 68px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1300px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="28"
+      data-width="1080"
+      data-height="1920"
+    >
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="28"
+        data-track-index="0"
+      ></canvas>
+      <div id="vignette" class="clip" data-start="0" data-duration="28" data-track-index="1"></div>
+      <div id="alarm" class="clip" data-start="0" data-duration="28" data-track-index="1"></div>
+
+      <div id="vhs" class="clip" data-start="0" data-duration="28" data-track-index="2">
+        <div id="vhs-band"></div>
+        <div id="vhs-label">&lt;&lt; REBOBINANDO</div>
+      </div>
+
+      <div id="part" class="clip" data-start="2.55" data-duration="25.45" data-track-index="3">
+        <span class="chip" id="part-chip">PARTE 2</span>
+      </div>
+
+      <div id="hook" class="card clip" data-start="0" data-duration="1.65" data-track-index="4">
+        <div class="in" id="hook-in">
+          <span class="huge">TRAMPA</span>
+          <span class="stamp" id="stamp">ILEGAL</span>
+        </div>
+      </div>
+      <div id="three" class="card clip" data-start="2.6" data-duration="2.0" data-track-index="4">
+        <div class="in" id="three-in">
+          <span class="huge yellow" id="three-num">3</span>
+          <span class="big">PASOS</span>
+        </div>
+      </div>
+      <div id="s1" class="card clip" data-start="4.68" data-duration="3.8" data-track-index="4">
+        <div class="in" id="s1-in">
+          <span class="chip">PASO 1</span><span class="mid">CAVA<br />6 BLOQUES</span>
+        </div>
+      </div>
+      <div id="s2" class="card clip" data-start="8.56" data-duration="4.7" data-track-index="4">
+        <div class="in" id="s2-in">
+          <span class="chip">PASO 2</span><span class="mid">PISTÓN<br />PEGAJOSO</span>
+        </div>
+      </div>
+      <div
+        id="covered"
+        class="card clip"
+        data-start="13.35"
+        data-duration="1.45"
+        data-track-index="4"
+      >
+        <div class="in" id="covered-in"><span class="big yellow">¡TAPADO!</span></div>
+      </div>
+      <div id="s3" class="card clip" data-start="14.96" data-duration="4.5" data-track-index="4">
+        <div class="in" id="s3-in">
+          <span class="chip">PASO 3</span><span class="mid">REDSTONE<br />+ PALANCA</span>
+        </div>
+      </div>
+      <div id="click" class="card clip" data-start="21.95" data-duration="0.9" data-track-index="4">
+        <div class="in" id="click-in"><span class="big yellow">¡CLIC!</span></div>
+      </div>
+      <div id="bye" class="card clip" data-start="22.86" data-duration="1.5" data-track-index="4">
+        <div class="in" id="bye-in"><span class="huge hot">¡ADIÓS!</span></div>
+      </div>
+      <div
+        id="outro"
+        class="card clip"
+        data-start="24.36"
+        data-duration="3.64"
+        data-track-index="4"
+      >
+        <div class="in" id="outro-in">
+          <span class="big">COMENTA</span>
+          <span class="chip red" id="next">¿QUÉ TRAMPA SIGUE?</span>
+        </div>
+      </div>
+
+      <div id="cap0" class="cap clip" data-start="0.14" data-duration="1.5" data-track-index="7">
+        <span>¡ESTA TRAMPA ES ILEGAL!</span>
+      </div>
+      <div id="cap1" class="cap clip" data-start="2.56" data-duration="1.04" data-track-index="7">
+        <span>Y TE ENSEÑO A HACERLA</span>
+      </div>
+      <div id="cap2" class="cap clip" data-start="3.6" data-duration="1.0" data-track-index="7">
+        <span>EN TRES PASOS</span>
+      </div>
+      <div id="cap3" class="cap clip" data-start="4.68" data-duration="0.82" data-track-index="7">
+        <span>PASO UNO</span>
+      </div>
+      <div id="cap4" class="cap clip" data-start="5.5" data-duration="1.52" data-track-index="7">
+        <span>CAVA UN HOYO DE SEIS BLOQUES</span>
+      </div>
+      <div id="cap6" class="cap clip" data-start="7.02" data-duration="1.54" data-track-index="7">
+        <span>JUSTO FRENTE A TU PUERTA</span>
+      </div>
+      <div id="cap7" class="cap clip" data-start="8.56" data-duration="1.14" data-track-index="7">
+        <span>PASO DOS</span>
+      </div>
+      <div id="cap8" class="cap clip" data-start="9.7" data-duration="2.3" data-track-index="7">
+        <span>PON UN PISTÓN PEGAJOSO AL LADO</span>
+      </div>
+      <div id="cap10" class="cap clip" data-start="12.0" data-duration="1.32" data-track-index="7">
+        <span>CON UN BLOQUE DE PASTO</span>
+      </div>
+      <div id="cap11" class="cap clip" data-start="13.32" data-duration="1.36" data-track-index="7">
+        <span>TAPANDO EL HOYO</span>
+      </div>
+      <div id="cap12" class="cap clip" data-start="14.96" data-duration="1.16" data-track-index="7">
+        <span>PASO TRES</span>
+      </div>
+      <div id="cap13" class="cap clip" data-start="16.12" data-duration="1.36" data-track-index="7">
+        <span>CONECTA REDSTONE</span>
+      </div>
+      <div id="cap14" class="cap clip" data-start="17.48" data-duration="2.12" data-track-index="7">
+        <span>HASTA UNA PALANCA DENTRO DE TU CASA</span>
+      </div>
+      <div id="cap16" class="cap clip" data-start="19.6" data-duration="1.88" data-track-index="7">
+        <span>Y CUANDO TU AMIGO VENGA A ROBARTE</span>
+      </div>
+      <div id="cap18" class="cap clip" data-start="21.48" data-duration="1.38" data-track-index="7">
+        <span>BAJAS LA PALANCA</span>
+      </div>
+      <div id="cap19" class="cap clip" data-start="22.86" data-duration="1.32" data-track-index="7">
+        <span>¡ADIÓS!</span>
+      </div>
+      <div id="cap20" class="cap clip" data-start="24.36" data-duration="2.92" data-track-index="7">
+        <span>COMENTA QUÉ TRAMPA HACEMOS DESPUÉS</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="28" data-track-index="5">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="28" data-track-index="6"></div>
+      <div id="impact" class="clip" data-start="0" data-duration="28" data-track-index="6"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="28"
+        data-track-index="8"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="28"
+        data-track-index="9"
+        data-volume="0.55"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="28"
+        data-track-index="10"
+        data-volume="0.2"
+        data-fade-out="1.5"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      tl.set("#impact", { opacity: 0 }, 0);
+      tl.set("#flash", { opacity: 0 }, 0);
+      tl.set("#vhs", { opacity: 0 }, 0);
+      tl.set("#alarm", { opacity: 0 }, 0);
+      const pop = (sel, at) =>
+        tl.fromTo(
+          sel,
+          { scale: 0.2, opacity: 0, y: 40 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.26, ease: "back.out(3)" },
+          at,
+        );
+      const slam = (sel, at, rot = 0) =>
+        tl.fromTo(
+          sel,
+          { scale: 3, opacity: 0, rotation: rot * 2 },
+          { scale: 1, opacity: 1, rotation: rot, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+      const out = (sel, at) =>
+        tl.to(sel, { scale: 0.8, opacity: 0, y: -30, duration: 0.14, ease: "power2.in" }, at);
+      // Impact frame: two inverted frames on the biggest hits.
+      const impact = (at) => {
+        tl.to("#impact", { opacity: 1, duration: 0.001 }, at);
+        tl.to("#impact", { opacity: 0, duration: 0.001 }, at + 0.067);
+      };
+      const flash = (at, o = 0.85) => {
+        tl.to("#flash", { opacity: o, duration: 0.04 }, at);
+        tl.to("#flash", { opacity: 0, duration: 0.3 }, at + 0.04);
+      };
+
+      // HOOK: on screen at frame 0; the stamp re-slams on "ilegal".
+      tl.set("#stamp", { scale: 1, rotation: -6 }, 0);
+      tl.fromTo(
+        "#stamp",
+        { scale: 2.4, rotation: -14 },
+        { scale: 1.05, rotation: -6, duration: 0.14, ease: "power4.out" },
+        1.14,
+      );
+      tl.fromTo(
+        "#hook-in",
+        { x: 0 },
+        { x: 14, duration: 0.04, ease: "none", yoyo: true, repeat: 5 },
+        1.28,
+      );
+      tl.to("#alarm", { opacity: 1, duration: 0.05 }, 0);
+      tl.to("#alarm", { opacity: 0.4, duration: 0.5 }, 0.3);
+      tl.to("#alarm", { opacity: 1, duration: 0.05 }, 1.14);
+      tl.to("#alarm", { opacity: 0, duration: 0.3 }, 1.5);
+      impact(1.14);
+      out("#hook-in", 1.5);
+      // REWIND.
+      tl.to("#vhs", { opacity: 1, duration: 0.05 }, 1.6);
+      tl.fromTo(
+        "#vhs-band",
+        { y: 1900 },
+        { y: -200, duration: 0.45, ease: "none", repeat: 1 },
+        1.6,
+      );
+      tl.fromTo(
+        "#vhs-label",
+        { x: 0 },
+        { x: 8, duration: 0.05, ease: "none", yoyo: true, repeat: 17 },
+        1.6,
+      );
+      tl.to("#vhs", { opacity: 0, duration: 0.05 }, 2.5);
+      flash(2.52, 0.9);
+      slam("#part-chip", 2.6, -3);
+      // 3 PASOS.
+      pop("#three-in", 2.62);
+      tl.fromTo(
+        "#three-num",
+        { scale: 1 },
+        { scale: 1.35, duration: 0.1, ease: "power2.out", yoyo: true, repeat: 1 },
+        3.76,
+      );
+      out("#three-in", 4.45);
+      // Steps.
+      slam("#s1-in", 4.68, -3);
+      impact(4.68);
+      out("#s1-in", 8.32);
+      slam("#s2-in", 8.56, 3);
+      impact(8.56);
+      out("#s2-in", 13.1);
+      slam("#covered-in", 13.35, -4);
+      out("#covered-in", 14.62);
+      slam("#s3-in", 14.96, -3);
+      impact(14.96);
+      out("#s3-in", 19.3);
+      slam("#click-in", 21.95, 5);
+      out("#click-in", 22.7);
+      slam("#bye-in", 22.86, -6);
+      impact(22.86);
+      tl.fromTo(
+        "#bye-in",
+        { x: 0 },
+        { x: 12, duration: 0.04, ease: "none", yoyo: true, repeat: 7 },
+        23.0,
+      );
+      out("#bye-in", 24.2);
+      pop("#outro-in", 24.4);
+      tl.fromTo(
+        "#next",
+        { scale: 1 },
+        { scale: 1.1, duration: 0.2, ease: "power2.inOut", yoyo: true, repeat: 5 },
+        25.2,
+      );
+      // Impact flashes tied to world hits.
+      impact(10.06);
+      flash(13.3, 0.5);
+      flash(18.3, 0.35);
+      flash(23.95, 0.6);
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 16 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as W from "./lib/world.js";
+      const { THREE, scene, camera, renderer, clamp, lerp, smooth, easeOutBack, prog, mulberry32 } =
+        W;
+      const {
+        pipe,
+        friend,
+        heldGold,
+        trapCover,
+        water,
+        pitBlocks,
+        paint,
+        lid,
+        glow,
+        loot,
+        roomFill,
+        torchLights,
+        clouds,
+        cloudX,
+      } = W;
+
+      W.wallBlocks["0:0"].visible = false;
+      W.wallBlocks["0:1"].visible = false;
+      W.signA.visible = W.signB.visible = false;
+      W.star.visible = false;
+      paint.position.set(0, 1, 0.035);
+      lid.rotation.x = -1.9;
+      glow.visible = true;
+      roomFill.intensity = 4;
+      [pipe, friend].forEach((c) => (c.group.rotation.order = "YXZ"));
+      const roof = scene.children.filter((m) => m.isMesh && Math.abs(m.position.y - 4.5) < 0.01);
+
+      const PULSE = 18.25,
+        OFF = 21.95,
+        RETRACT = 22.35,
+        FALL = 22.75;
+      // ---------- new props ----------
+      // The dig: six blocks filling the trap cell (top grass + five below).
+      const digBlocks = [trapCover];
+      for (let i = 1; i <= 5; i++)
+        digBlocks.push(W.block(i < 3 ? W.dirtMat : W.stoneBlockMat, 0, -0.5 - i, 1));
+      const digSpin = digBlocks.map((_, i) => {
+        const r = mulberry32(200 + i);
+        return { dx: (r() - 0.5) * 6, dz: 2 + r() * 3, spin: 4 + r() * 6 };
+      });
+      const pistonCell = pitBlocks["2:1"];
+      const cover = pitBlocks["1:1"];
+
+      // Sticky piston (original look): stone body, plank head, green slime face.
+      const pistonTex = W.pixelTex(16, 16, 300, (x, y, r) => {
+        if (y < 4) return W.pal(["#a8814c", "#b88f58", "#c49b62"], r());
+        if (y === 4) return "#3c3c40";
+        if (x > 5 && x < 10 && y > 6 && y < 14) return "#5a5a60";
+        return W.pal(["#6c6c72", "#77777d", "#828288"], r());
+      });
+      const slimeTex = W.pixelTex(16, 16, 301, (x, y, r) => {
+        if (x < 2 || x > 13 || y < 2 || y > 13) return W.pal(["#a8814c", "#b88f58"], r());
+        return W.pal(["#5fc94b", "#6fd85a", "#4fb83c", "#8ae878"], r());
+      });
+      const bodyMat = W.M(pistonTex),
+        plankMat = W.M(W.planks),
+        slimeMat = W.M(slimeTex, { emissive: "#0c3a08" });
+      const piston = new THREE.Group();
+      const pBody = new THREE.Mesh(new THREE.BoxGeometry(0.75, 1, 1), bodyMat);
+      pBody.position.x = 0.125;
+      const pHead = new THREE.Group();
+      const headPlate = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1, 1), [
+        plankMat,
+        slimeMat,
+        plankMat,
+        plankMat,
+        plankMat,
+        plankMat,
+      ]);
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(1, 0.25, 0.25), W.M(W.log));
+      arm.position.x = 0.5;
+      pHead.add(headPlate, arm);
+      pHead.position.x = -0.375;
+      piston.add(pBody, pHead);
+      piston.traverse((m) => m.isMesh && (m.castShadow = m.receiveShadow = true));
+      scene.add(piston);
+
+      // Redstone dust path: piston top -> under the wall -> lever inside.
+      const pathPts = [
+        [2, 1],
+        [2, -1.6],
+        [1.25, -1.6],
+      ].map(([x, z]) => new THREE.Vector2(x, z));
+      const dust = [];
+      for (let s = 0; s < pathPts.length - 1; s++) {
+        const a = pathPts[s],
+          b = pathPts[s + 1];
+        const n = Math.round(a.distanceTo(b) / 0.25);
+        for (let i = 0; i < n; i++) {
+          const p = a.clone().lerp(b, (i + 0.5) / n);
+          const horiz = Math.abs(b.x - a.x) > Math.abs(b.y - a.y);
+          const m = new THREE.Mesh(
+            new THREE.BoxGeometry(horiz ? 0.24 : 0.18, 0.03, horiz ? 0.18 : 0.24),
+            new THREE.MeshBasicMaterial({ color: "#5a0a06" }),
+          );
+          m.position.set(p.x, 0.012, p.y);
+          scene.add(m);
+          dust.push(m);
+        }
+      }
+      // Lever.
+      const lever = new THREE.Group();
+      const leverBase = new THREE.Mesh(
+        new THREE.BoxGeometry(0.35, 0.12, 0.5),
+        new THREE.MeshLambertMaterial({ map: W.stone }),
+      );
+      const handle = new THREE.Group();
+      const stick = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.5, 0.08), W.M(W.log));
+      stick.position.y = 0.25;
+      handle.add(stick);
+      handle.position.y = 0.06;
+      lever.add(leverBase, handle);
+      lever.position.set(1.0, 0.06, -1.6);
+      scene.add(lever);
+
+      const splashMat = new THREE.MeshLambertMaterial({ color: "#5fb2ff", emissive: "#1b4f8a" });
+      const redMat = new THREE.MeshBasicMaterial({ color: "#ff3a2a" });
+      const add = (...a) => W.bursts.push(W.burst(...a));
+      digBlocks.forEach((b, i) => add(210 + i, [0, -0.2, 0.7], 5.5 + i * 0.25, W.dustMat, 8, 1.6));
+      add(220, [2, -0.2, 0.7], 9.7, W.dustMat, 10, 1.6);
+      add(221, [2, 0.1, 0.7], 10.06, W.dustMat, 18, 2.4);
+      add(222, [0, 0.1, 0.7], 13.3, W.dustMat, 12, 1.8);
+      add(223, [1.0, 0.2, -1.9], 17.7, W.dustMat, 10, 1.4);
+      add(224, [1.6, 0.1, -0.8], 18.4, redMat, 16, 1.8);
+      add(225, [0, -6.1, 0.7], FALL + 0.83, splashMat, 26, 2.6);
+
+      // ---------- world state: a pure function of world time ----------
+      function world(wt) {
+        // Step 1: dig six blocks, top first.
+        digBlocks.forEach((b, i) => {
+          const t0 = 5.5 + i * 0.25,
+            k = prog(wt, t0, t0 + 0.75);
+          const baseY = -0.5 - i;
+          b.visible = k < 1;
+          if (k <= 0) {
+            b.position.set(0, baseY, 1);
+            b.rotation.set(0, 0, 0);
+            b.scale.setScalar(1);
+            return;
+          }
+          const s = digSpin[i];
+          const rise = smooth(prog(k, 0, 0.3));
+          const fly = prog(k, 0.3, 1);
+          b.position.set(
+            s.dx * fly,
+            lerp(baseY, 1.4, rise) + 2.2 * Math.sin(fly * Math.PI),
+            1 + s.dz * fly,
+          );
+          b.rotation.set(s.spin * fly, s.spin * 0.7 * fly, 0);
+          b.scale.setScalar(1 - 0.8 * fly);
+        });
+        water.visible = wt >= 7.0;
+
+        // Step 2: dig the piston cell, the piston slams down, the head pushes the cover.
+        const cellK = prog(wt, 9.7, 10.2);
+        pistonCell.visible = cellK < 1;
+        pistonCell.position.set(
+          2 + cellK * 2.5,
+          -0.5 + Math.sin(cellK * Math.PI) * 2.5,
+          1 + cellK * 2,
+        );
+        pistonCell.rotation.set(cellK * 6, cellK * 4, 0);
+        pistonCell.scale.setScalar(1 - 0.8 * cellK);
+        piston.visible = wt >= 9.75;
+        const drop = prog(wt, 9.75, 10.06);
+        piston.position.set(2, -0.5 + (1 - drop * drop) * 6, 1);
+        piston.rotation.y = 0;
+        const jiggle =
+          wt >= 10.52 && wt < 11.2
+            ? Math.sin((wt - 10.52) * 30) * 0.08 * (1 - prog(wt, 10.52, 11.2))
+            : 0;
+        piston.scale.set(1 + jiggle, 1 - jiggle, 1 + jiggle);
+        slimeMat.emissive.setRGB(
+          0.05 + 0.25 * (wt >= 10.52 && wt < 11.4 ? 1 : 0),
+          0.23 + 0.5 * (wt >= 10.52 && wt < 11.4 ? 1 : 0),
+          0.03,
+        );
+        const ext = smooth(prog(wt, 13.1, 13.3)) * (1 - smooth(prog(wt, RETRACT, RETRACT + 0.12)));
+        pHead.position.x = -0.375 - ext;
+        arm.scale.x = Math.max(0.01, ext);
+        arm.position.x = 0.125 + ext / 2;
+        arm.visible = ext > 0.02;
+        cover.position.set(1 - ext, -0.5, 1);
+        // Highlight the grass block on "bloque".
+        const hl = wt >= 12.3 && wt < 12.9 ? Math.sin(prog(wt, 12.3, 12.9) * Math.PI) : 0;
+        cover.scale.setScalar(1 + 0.12 * hl);
+
+        // Step 3: redstone dust appears segment by segment, the lever slams, power pulses.
+        dust.forEach((m, i) => {
+          const t0 = 16.12 + i * (1.2 / dust.length);
+          m.visible = wt >= t0;
+          m.scale.setScalar(m.visible ? 0.4 + 0.6 * easeOutBack(prog(wt, t0, t0 + 0.12)) : 1);
+          // Power: travels from the lever (end of the path) to the piston.
+          const tOn = PULSE + (dust.length - 1 - i) * (0.5 / dust.length);
+          const on = wt >= tOn && wt < OFF + (dust.length - 1 - i) * 0.01;
+          m.material.color.set(on ? (wt < tOn + 0.15 ? "#ffffff" : "#ff2a1a") : "#5a0a06");
+        });
+        lever.visible = wt >= 17.7;
+        const ld = prog(wt, 17.7, 17.9);
+        lever.position.y = 0.06 + (1 - ld * ld) * 3;
+        handle.rotation.z = wt < OFF ? 0.6 : lerp(0.6, -0.6, smooth(prog(wt, OFF, OFF + 0.1)));
+
+        // Chest loot shimmer; torches flicker.
+        loot.forEach((b, i) => {
+          b.rotation.y = wt * 0.6 + i;
+          b.scale.setScalar(0.6);
+          b.position.y = 0.45 + Math.sin(wt * 3 + i) * 0.08 + b.userData.base;
+          b.visible = !(i === 1 && wt >= 19.0);
+        });
+        torchLights.forEach((p, i) => (p.intensity = 6 + Math.sin(wt * 11 + i * 2) * 0.6));
+        clouds.forEach((c, i) => (c.position.x = cloudX[i] + wt * 0.25));
+
+        // Painting ripples as the friend runs out.
+        const rip = wt >= 19.75 && wt < 20.15 ? 1 - (wt - 19.75) / 0.4 : 0;
+        paint.scale.set(1 + 0.05 * rip * Math.sin(wt * 50), 1 - 0.03 * rip * Math.sin(wt * 50), 1);
+      }
+
+      function swing(c, t, speed, amp) {
+        const s = Math.sin(t * speed) * amp;
+        c.legL.rotation.x = s;
+        c.legR.rotation.x = -s;
+        c.armL.rotation.x = -s * 0.8;
+        c.armR.rotation.x = s * 0.8;
+        c.group.position.y = Math.abs(Math.sin(t * speed)) * 0.05;
+      }
+      const armsUp = (c) => {
+        c.armL.rotation.z = -2.9;
+        c.armR.rotation.z = 2.9;
+      };
+
+      function actors(wt) {
+        const P = pipe,
+          F = friend;
+        P.reset();
+        F.reset();
+        // Pipe: presents (intro), watches the build, works the lever, peeks into the pit.
+        if (wt < 14.8) {
+          P.group.position.set(-1.5, 0, 2.6);
+          P.group.rotation.y = wt < 4.6 ? 0.25 : 2.3;
+          if (wt < 4.6) {
+            // Intro: three fingers up energy.
+            P.armR.rotation.z = 2.6;
+            P.armR.rotation.x = Math.sin(wt * 9) * 0.2;
+            P.group.position.y = Math.abs(Math.sin(wt * 7)) * 0.1;
+            P.setFace("happy");
+          } else {
+            P.head.rotation.x = 0.35;
+            P.armR.rotation.x = -1.2 + Math.sin(wt * 6) * 0.1; // pointing at the work
+            P.setFace("smirk");
+          }
+        } else if (wt < 24.3) {
+          P.group.position.set(1.0, 0, -2.35);
+          P.group.rotation.y = 0;
+          P.setFace("smirk");
+          P.head.rotation.x = 0.4;
+          const pull = prog(wt, OFF - 0.15, OFF + 0.05),
+            back = prog(wt, OFF + 0.4, OFF + 0.6);
+          P.armR.rotation.x =
+            -1.1 * (smooth(pull) - smooth(back)) - (wt >= OFF - 0.15 && wt < OFF + 0.6 ? 0 : 0);
+          P.armR.rotation.z = 0.15;
+        } else {
+          // Peeks over the edge of the pit, laughing.
+          P.group.position.set(0, 0, 0.12);
+          P.group.rotation.y = 0;
+          P.group.rotation.x = 0.55;
+          P.setFace("smirk");
+          P.armL.rotation.x = P.armR.rotation.x = -0.6 + Math.sin(wt * 12) * 0.15;
+        }
+
+        // Friend: runs out with the gold, dances on the cover, falls, flails.
+        F.group.visible = wt >= 19.6;
+        let gold = null;
+        if (wt >= 19.6 && wt < RETRACT) {
+          const run = prog(wt, 19.6, 20.4);
+          if (run < 1) {
+            F.group.position.set(0, 0, lerp(-0.8, 1.0, run));
+            F.group.rotation.y = 0;
+            swing(F, wt, 20, 1.0);
+          } else {
+            F.group.position.set(0, Math.abs(Math.sin(wt * 9)) * 0.14, 1.0);
+            F.group.rotation.y = 0.5 + Math.sin(wt * 4.5) * 0.3;
+            F.legL.rotation.x = Math.sin(wt * 9) * 0.35;
+            F.legR.rotation.x = -Math.sin(wt * 9) * 0.35;
+          }
+          armsUp(F);
+          F.setFace("grin");
+          gold = [F.group.position.x, F.group.position.y + 2.12, F.group.position.z];
+        } else if (wt >= RETRACT && wt < FALL) {
+          F.group.position.set(0, 0, 1.0);
+          F.group.rotation.y = 0.5;
+          F.setFace("shock");
+          F.armL.rotation.z = -1.4;
+          F.armR.rotation.z = 1.4;
+          gold = [0, 2.12, 1.0];
+        } else if (wt >= FALL) {
+          const dt = wt - FALL;
+          const y = Math.max(-6.15, -9 * dt * dt);
+          const inWater = y <= -6.15;
+          F.group.position.set(0, inWater ? y + Math.sin(wt * 6) * 0.05 : y, 1.0);
+          F.group.rotation.y = inWater ? 0.4 + Math.sin(wt * 3) * 0.3 : 0.5 + dt * 2;
+          F.group.rotation.x = inWater ? -0.5 : -0.18;
+          F.head.rotation.x = inWater ? 0 : -1.25;
+          F.setFace("shock");
+          F.armL.rotation.z = -1.6 - Math.sin(wt * 16) * 0.6;
+          F.armR.rotation.z = 1.6 + Math.sin(wt * 16) * 0.6;
+          F.legL.rotation.x = Math.sin(wt * 14) * 0.5;
+          F.legR.rotation.x = -Math.sin(wt * 14) * 0.5;
+          // The gold flies up the shaft past the camera.
+          if (dt < 2) gold = [0, 2.12 + 6 * dt - 1.2 * dt * dt, 1.0];
+        }
+        heldGold.visible = !!gold;
+        if (gold) {
+          heldGold.position.set(...gold);
+          heldGold.rotation.y = wt * 2;
+        }
+      }
+
+      // ---------- camera: hard-cut shots, eased inside ----------
+      // [start, end, pos0, look0, pos1, look1, fov0, fov1, up]
+      const DOWN = [0, 0, -1];
+      const shots = [
+        [0, 1.6, [0.05, 1.4, 1.02], [0, -6, 1.0], [0.05, 0.9, 1.02], [0, -6, 1.0], 70, 58, DOWN],
+        [2.55, 4.6, [0.2, 1.9, 6.6], [-1.3, 1.2, 2.4], [-0.4, 1.7, 5.4], [-1.4, 1.15, 2.5], 50, 46],
+        [4.6, 8.5, [2.4, 3.6, 4.6], [0, -0.6, 1.0], [2.0, 3.2, 4.0], [0, -0.8, 1.0], 56, 52],
+        [8.5, 11.3, [4.2, 2.6, 4.6], [1.2, -0.2, 1.0], [3.7, 2.2, 4.0], [1.2, -0.3, 1.0], 54, 50],
+        [11.3, 14.8, [2.6, 2.4, 3.8], [0.9, -0.4, 1.0], [2.2, 2.0, 3.4], [0.8, -0.4, 1.0], 52, 46],
+        [14.8, 19.5, [3.0, 5.6, 2.2], [1.4, 0, -0.5], [2.6, 5.0, 1.8], [1.4, 0, -0.6], 56, 52],
+        [19.5, 21.4, [2.9, 1.6, 4.4], [0, 1.0, 0.8], [2.6, 1.5, 4.0], [0, 0.9, 0.8], 50, 48],
+        [
+          21.4,
+          22.6,
+          [-0.2, 1.0, -2.0],
+          [1.0, 0.3, -1.55],
+          [-0.1, 0.95, -1.95],
+          [1.0, 0.3, -1.55],
+          46,
+          38,
+        ],
+        [22.6, 23.05, [2.6, 1.5, 4.0], [0, 0.9, 0.9], [2.5, 1.5, 3.9], [0, 0.9, 0.9], 48, 44],
+        [
+          23.05,
+          24.3,
+          [0.05, 2.4, 1.02],
+          [0, -6, 1.0],
+          [0.05, 2.2, 1.02],
+          [0, -6, 1.0],
+          72,
+          66,
+          DOWN,
+        ],
+        [24.3, 28, [0.3, 2.9, 1.5], [0, -6.2, 0.95], [0.25, 3.2, 1.4], [0, -6.2, 0.95], 62, 54],
+      ];
+      const kicks = [1.14, 4.68, 8.56, 10.06, 13.3, 14.96, 17.7, 21.95, 22.86, 23.95];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      function cam(t) {
+        let pos,
+          look,
+          fov,
+          up = [0, 1, 0];
+        if (t >= 1.6 && t < 2.55) {
+          // Rewind: fast orbit over the scene.
+          const k = prog(t, 1.6, 2.55);
+          const ang = 0.6 + k * Math.PI * 1.6;
+          pos = new THREE.Vector3(0.5 + Math.sin(ang) * 11, 13 - k * 3, 1 + Math.cos(ang) * 11);
+          look = new THREE.Vector3(0.5, 0, 0.5);
+          fov = 55;
+        } else {
+          const s = shots.find((x) => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+          const k = smooth(prog(t, s[0], s[1]));
+          pos = v3(s[2]).lerp(v3(s[4]), k);
+          look = v3(s[3]).lerp(v3(s[5]), k);
+          fov = lerp(s[6], s[7], k);
+          up = s[8] || up;
+        }
+        let kick = 0,
+          sh = 0;
+        for (const q of kicks)
+          if (t >= q && t < q + 0.3) {
+            kick = Math.max(kick, 1 - (t - q) / 0.3);
+            sh = Math.max(sh, 1 - (t - q) / 0.3);
+          }
+        pos.x += Math.sin(t * 90) * 0.07 * sh;
+        pos.y += Math.cos(t * 77) * 0.07 * sh;
+        camera.up.set(...up);
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = fov - 9 * kick * kick;
+        camera.updateProjectionMatrix();
+        roof.forEach((m) => (m.visible = !(t >= 14.8 && t < 19.5)));
+      }
+
+      // World time: the hook is a slow-mo of the fall, the rewind plays the whole build backwards.
+      function worldTime(t) {
+        if (t < 1.6) return lerp(23.12, 23.32, t / 1.6);
+        if (t < 2.55) {
+          const k = prog(t, 1.6, 2.55);
+          return lerp(23.32, 2.6, k * k * (3 - 2 * k));
+        }
+        if (t >= FALL && t < 23.5) return FALL + (t - FALL) * 0.55; // slow-mo start of the fall
+        if (t >= 23.5) return FALL + (23.5 - FALL) * 0.55 + (t - 23.5);
+        return t;
+      }
+
+      function renderAt(t) {
+        const wt = worldTime(t);
+        world(wt);
+        actors(wt);
+        cam(t);
+        W.renderBursts(wt);
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>

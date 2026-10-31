@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --sky-top: #3f9fd6;
+        --sky-mid: #9ed4e8;
+        --sky-low: #f4e6c2;
+        --ink: #ffffff;
+        --accent: #ffd23f;
+        --hot: #ff4d3a;
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: var(--sky-top);
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        font-family: var(--font-display);
+        background: linear-gradient(
+          180deg,
+          var(--sky-top) 0%,
+          var(--sky-mid) 42%,
+          var(--sky-low) 62%,
+          #e9dcb8 100%
+        );
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 58%,
+          rgba(20, 10, 0, 0.4) 100%
+        );
+      }
+      #speed {
+        position: absolute;
+        inset: -200px 0;
+        opacity: 0;
+        background: repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0 70px,
+          rgba(255, 255, 255, 0.5) 70px 74px,
+          rgba(255, 255, 255, 0) 74px 160px
+        );
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      #redflash {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 50%,
+          rgba(255, 60, 40, 0) 40%,
+          rgba(255, 40, 20, 0.55) 100%
+        );
+        opacity: 0;
+      }
+      #header {
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        top: 200px;
+        text-align: center;
+      }
+      #header span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 52px;
+        line-height: 1.12;
+        -webkit-text-stroke: 12px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 6px 0 var(--stroke);
+      }
+      #header b {
+        color: var(--accent);
+        font-weight: normal;
+      }
+      .card {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 470px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .card .in {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .big {
+        display: block;
+        color: var(--ink);
+        font-size: 132px;
+        line-height: 1;
+        -webkit-text-stroke: 24px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 12px 0 var(--stroke);
+      }
+      .mid {
+        display: block;
+        color: var(--ink);
+        font-size: 86px;
+        line-height: 1.05;
+        -webkit-text-stroke: 18px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 10px 0 var(--stroke);
+      }
+      .yellow {
+        color: var(--accent);
+      }
+      .hot {
+        color: var(--hot);
+      }
+      .chip {
+        display: block;
+        background: var(--accent);
+        color: var(--stroke);
+        font-size: 54px;
+        padding: 14px 34px 10px;
+        border: 8px solid var(--stroke);
+        box-shadow: 0 10px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1130px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 68px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1268px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="27.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="27.5"
+        data-track-index="0"
+      ></canvas>
+      <div id="speed" class="clip" data-start="0" data-duration="27.5" data-track-index="1"></div>
+      <div
+        id="vignette"
+        class="clip"
+        data-start="0"
+        data-duration="27.5"
+        data-track-index="1"
+      ></div>
+      <div
+        id="redflash"
+        class="clip"
+        data-start="0"
+        data-duration="27.5"
+        data-track-index="1"
+      ></div>
+
+      <div id="header" class="clip" data-start="0" data-duration="23.4" data-track-index="2">
+        <span><b>POV:</b> tu amigo encuentra<br />tu puerta secreta</span>
+      </div>
+
+      <div id="r-seen" class="card clip" data-start="6.2" data-duration="1.4" data-track-index="3">
+        <div class="in" id="r-seen-in">
+          <span class="mid">…SÍ TE<br />VIERON</span>
+        </div>
+      </div>
+      <div id="r-what" class="card clip" data-start="9.6" data-duration="1.4" data-track-index="3">
+        <div class="in" id="r-what-in"><span class="big yellow">¿¡QUÉ!?</span></div>
+      </div>
+      <div
+        id="r-thief"
+        class="card clip"
+        data-start="11.6"
+        data-duration="1.8"
+        data-track-index="3"
+      >
+        <div class="in" id="r-thief-in"><span class="big hot">¡LADRÓN!</span></div>
+      </div>
+      <div
+        id="r-planb"
+        class="card clip"
+        data-start="17.3"
+        data-duration="1.1"
+        data-track-index="3"
+      >
+        <div class="in" id="r-planb-in"><span class="chip">PLAN B</span></div>
+      </div>
+      <div
+        id="r-bye"
+        class="card clip"
+        data-start="19.55"
+        data-duration="1.65"
+        data-track-index="3"
+      >
+        <div class="in" id="r-bye-in"><span class="big yellow">¡CHAO!</span></div>
+      </div>
+      <div id="outro" class="card clip" data-start="23.5" data-duration="4" data-track-index="3">
+        <div class="in" id="outro-in">
+          <span class="big">SÍGUEME</span>
+          <span class="chip" id="part2">PARTE 2: LA TRAMPA</span>
+        </div>
+      </div>
+
+      <div id="cap0" class="cap clip" data-start="0.37" data-duration="1.2" data-track-index="7">
+        <span>POV: TU AMIGO</span>
+      </div>
+      <div id="cap1" class="cap clip" data-start="1.57" data-duration="2.06" data-track-index="7">
+        <span>ENCUENTRA TU PUERTA SECRETA</span>
+      </div>
+      <div id="cap2" class="cap clip" data-start="4.47" data-duration="0.8" data-track-index="7">
+        <span>Y YO</span>
+      </div>
+      <div id="cap3" class="cap clip" data-start="5.31" data-duration="0.96" data-track-index="7">
+        <span>PENSANDO QUE NADIE</span>
+      </div>
+      <div id="cap4" class="cap clip" data-start="6.27" data-duration="1.24" data-track-index="7">
+        <span>ME HABÍA VISTO</span>
+      </div>
+      <div id="cap5" class="cap clip" data-start="8.58" data-duration="1.02" data-track-index="7">
+        <span>Y ESTE SE METE A MI</span>
+      </div>
+      <div id="cap7" class="cap clip" data-start="9.6" data-duration="1.4" data-track-index="7">
+        <span>BASE COMO SI NADA</span>
+      </div>
+      <div id="cap8" class="cap clip" data-start="11.0" data-duration="1.36" data-track-index="7">
+        <span>¡OYE!</span>
+      </div>
+      <div id="cap9" class="cap clip" data-start="12.52" data-duration="1.52" data-track-index="7">
+        <span>ESE ES MI BOTÍN!</span>
+      </div>
+      <div id="cap10" class="cap clip" data-start="15.43" data-duration="1.04" data-track-index="7">
+        <span>TRANQUILO</span>
+      </div>
+      <div id="cap11" class="cap clip" data-start="16.49" data-duration="1.74" data-track-index="7">
+        <span>SIEMPRE TENGO UN PLAN B</span>
+      </div>
+      <div id="cap12" class="cap clip" data-start="19.6" data-duration="1.62" data-track-index="7">
+        <span>¡CHAO, AMIGO!</span>
+      </div>
+      <div id="cap13" class="cap clip" data-start="22.83" data-duration="1.24" data-track-index="7">
+        <span>SÍGUEME Y TE</span>
+      </div>
+      <div id="cap14" class="cap clip" data-start="24.07" data-duration="1.74" data-track-index="7">
+        <span>ENSEÑO A HACER ESTA TRAMPA</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="27.5" data-track-index="4">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="27.5" data-track-index="4"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="27.5"
+        data-track-index="5"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="27.5"
+        data-track-index="6"
+        data-volume="0.5"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="27.5"
+        data-track-index="8"
+        data-volume="0.2"
+        data-fade-out="1.5"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      const pop = (sel, at) =>
+        tl.fromTo(
+          sel,
+          { scale: 0.2, opacity: 0, y: 40 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.28, ease: "back.out(2.8)" },
+          at,
+        );
+      const out = (sel, at) =>
+        tl.to(sel, { scale: 0.85, opacity: 0, y: -30, duration: 0.16, ease: "power2.in" }, at);
+
+      tl.set("#speed", { opacity: 0, y: 0 }, 0);
+      tl.set("#flash", { opacity: 0 }, 0);
+      tl.set("#redflash", { opacity: 0 }, 0);
+      tl.fromTo(
+        "#header span",
+        { scale: 1 },
+        { scale: 1.06, duration: 0.12, ease: "power2.out", yoyo: true, repeat: 1 },
+        0.37,
+      );
+      pop("#r-seen-in", 6.22);
+      out("#r-seen-in", 7.42);
+      // Freeze-frame hit: slam in with a shake.
+      tl.fromTo(
+        "#r-what-in",
+        { scale: 2.6, opacity: 0, rotation: -8 },
+        { scale: 1, opacity: 1, rotation: -4, duration: 0.16, ease: "power3.out" },
+        9.6,
+      );
+      tl.fromTo(
+        "#r-what-in",
+        { x: 0 },
+        { x: 10, duration: 0.05, ease: "none", yoyo: true, repeat: 5 },
+        9.76,
+      );
+      out("#r-what-in", 10.82);
+      pop("#r-thief-in", 11.62);
+      out("#r-thief-in", 13.22);
+      pop("#r-planb-in", 17.32);
+      out("#r-planb-in", 18.22);
+      tl.fromTo(
+        "#r-bye-in",
+        { scale: 0.2, opacity: 0, rotation: 10 },
+        { scale: 1, opacity: 1, rotation: 4, duration: 0.3, ease: "back.out(3)" },
+        19.57,
+      );
+      out("#r-bye-in", 21.02);
+      pop("#outro-in", 23.52);
+      tl.fromTo(
+        "#part2",
+        { scale: 1 },
+        { scale: 1.1, duration: 0.2, ease: "power2.inOut", yoyo: true, repeat: 5 },
+        24.6,
+      );
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 16 },
+          { scale: 1, y: 0, duration: 0.14, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      // Speed lines on the sneak and the chase.
+      tl.fromTo("#speed", { opacity: 0, y: 0 }, { opacity: 0.35, duration: 0.1 }, 7.6);
+      tl.fromTo("#speed", { y: 0 }, { y: 200, duration: 1.4, ease: "none" }, 7.6);
+      tl.to("#speed", { opacity: 0, duration: 0.1 }, 8.9);
+      tl.to("#speed", { opacity: 0.45, duration: 0.1 }, 11.0);
+      tl.fromTo("#speed", { y: 0 }, { y: 600, duration: 2.3, ease: "none" }, 11.0);
+      tl.to("#speed", { opacity: 0, duration: 0.1 }, 13.3);
+      // Flashes.
+      tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.9, duration: 0.05 }, 9.6);
+      tl.to("#flash", { opacity: 0, duration: 0.25 }, 9.65);
+      tl.fromTo("#redflash", { opacity: 0 }, { opacity: 1, duration: 0.06 }, 17.7);
+      tl.to("#redflash", { opacity: 0, duration: 0.5 }, 17.76);
+      tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.6, duration: 0.05 }, 20.62);
+      tl.to("#flash", { opacity: 0, duration: 0.3 }, 20.67);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as W from "./lib/world.js";
+      const { THREE, scene, camera, renderer, clamp, lerp, smooth, easeOutBack, prog } = W;
+      const {
+        pipe,
+        friend,
+        heldGold,
+        star,
+        trapCover,
+        button,
+        paint,
+        lid,
+        glow,
+        loot,
+        roomFill,
+        torchLights,
+        clouds,
+        cloudX,
+      } = W;
+
+      W.wallBlocks["0:0"].visible = false;
+      W.wallBlocks["0:1"].visible = false;
+      W.signA.visible = W.signB.visible = false;
+      paint.position.set(0, 1, 0.035);
+      [pipe, friend].forEach((c) => (c.group.rotation.order = "YXZ"));
+
+      const splashMat = new THREE.MeshLambertMaterial({ color: "#5fb2ff", emissive: "#1b4f8a" });
+      const add = (...a) => W.bursts.push(W.burst(...a));
+      add(41, [0, 0.6, -5.3], 4.85, W.sparkMat, 18, 2.0);
+      add(42, [-1.6, 1.4, -5.6], 11.75, W.sparkMat, 14, 1.8);
+      add(43, [0, 0, 0.7], 19.5, W.dustMat, 14, 1.6);
+      add(44, [0, -6.1, 0.7], 20.62, splashMat, 26, 2.6);
+      add(45, [0, 1.3, 0.4], 22.2, W.sparkMat, 16, 1.8);
+
+      // ---------- shots: hard cuts, each eased inside ----------
+      // [start, end, pos0, look0, pos1, look1, fov0, fov1, up]
+      const shots = [
+        [0, 1.6, [6.5, 3.8, 9.5], [-1, 1.2, 0.5], [5.4, 3.2, 8.0], [-1, 1.2, 0.8], 50, 48],
+        [1.6, 4.0, [1.6, 2.0, 5.6], [0, 1.1, 0], [0.8, 1.8, 4.0], [0, 1.1, -0.5], 50, 46],
+        [
+          4.0,
+          5.6,
+          [1.7, 1.9, -1.6],
+          [-0.2, 1.0, -4.3],
+          [1.3, 1.8, -2.0],
+          [-0.1, 1.0, -4.4],
+          62,
+          58,
+        ],
+        [5.6, 7.6, [-1.6, 1.9, 6.6], [-3.9, 1.4, 2.7], [-2.5, 1.7, 5.0], [-3.8, 1.45, 2.7], 44, 30],
+        [7.6, 9.0, [-1.8, 1.5, 5.6], [-2.6, 0.9, 1.6], [0.4, 1.4, 4.0], [-0.1, 1.0, 0.5], 52, 50],
+        [
+          9.0,
+          11.0,
+          [1.5, 1.65, -4.4],
+          [-0.1, 1.25, -0.9],
+          [1.4, 1.65, -4.2],
+          [-0.1, 1.25, -0.9],
+          56,
+          54,
+        ],
+        [
+          11.0,
+          13.4,
+          [-2.0, 3.0, -5.7],
+          [0.3, 0.6, -2.6],
+          [-1.8, 3.0, -5.6],
+          [0.2, 0.6, -2.2],
+          66,
+          64,
+        ],
+        [
+          13.4,
+          15.2,
+          [0.15, 1.62, -1.15],
+          [0, 1.4, -2.4],
+          [0.08, 1.58, -1.25],
+          [0, 1.45, -2.4],
+          66,
+          52,
+        ],
+        [
+          15.2,
+          17.4,
+          [-1.7, 1.7, -3.5],
+          [0.7, 1.2, -1.4],
+          [-1.3, 1.6, -3.1],
+          [0.7, 1.2, -1.4],
+          56,
+          54,
+        ],
+        [
+          17.4,
+          18.4,
+          [0.12, 1.42, -1.35],
+          [1.0, 1.25, -1.1],
+          [0.22, 1.38, -1.3],
+          [1.0, 1.25, -1.1],
+          50,
+          42,
+        ],
+        [18.4, 19.8, [2.9, 1.5, 4.2], [0, 1.0, 0.9], [2.6, 1.4, 3.8], [0, 0.9, 0.9], 48, 46],
+        [19.8, 21.2, [0, 2.6, 1.0], [0, -6, 1.0], [0, 2.4, 1.0], [0, -6, 1.0], 72, 66, [0, 0, -1]],
+        [21.2, 23.4, [3.3, 2.3, 4.6], [0, 1.3, 0.3], [2.9, 2.2, 4.2], [0, 1.4, 0.3], 50, 48],
+        [23.4, 27.5, [0.3, 2.7, 1.45], [0, -6.2, 0.95], [0.25, 3.0, 1.4], [0, -6.2, 0.95], 62, 54],
+      ];
+      const shakes = [9.6, 17.7, 19.5, 20.62];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      function cam(t) {
+        const s = shots.find((x) => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+        const k = smooth(prog(t, s[0], s[1]));
+        const pos = v3(s[2]).lerp(v3(s[4]), k);
+        const look = v3(s[3]).lerp(v3(s[5]), k);
+        let sh = 0;
+        for (const q of shakes) if (t >= q && t < q + 0.25) sh = Math.max(sh, 1 - (t - q) / 0.25);
+        pos.x += Math.sin(t * 90) * 0.06 * sh;
+        pos.y += Math.cos(t * 77) * 0.06 * sh;
+        camera.up.set(...(s[8] || [0, 1, 0]));
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        let fov = lerp(s[6], s[7], k);
+        // Freeze-frame punch-in.
+        if (t >= 9.6 && t < 11.0) fov -= 16 * easeOutBack(prog(t, 9.6, 9.8));
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+      }
+
+      // Walk along [t, x, z] keys; returns position, facing and whether moving.
+      function path(keys, t) {
+        if (t <= keys[0][0]) return { x: keys[0][1], z: keys[0][2], face: null, moving: false };
+        for (let i = 0; i < keys.length - 1; i++) {
+          const [ta, xa, za] = keys[i],
+            [tb, xb, zb] = keys[i + 1];
+          if (t < tb) {
+            const k = prog(t, ta, tb);
+            const moving = xa !== xb || za !== zb;
+            return {
+              x: lerp(xa, xb, k),
+              z: lerp(za, zb, k),
+              face: moving ? Math.atan2(xb - xa, zb - za) : null,
+              moving,
+            };
+          }
+        }
+        const l = keys[keys.length - 1];
+        return { x: l[1], z: l[2], face: null, moving: false };
+      }
+      function swing(c, t, speed, amp) {
+        const s = Math.sin(t * speed) * amp;
+        c.legL.rotation.x = s;
+        c.legR.rotation.x = -s;
+        c.armL.rotation.x = -s * 0.8;
+        c.armR.rotation.x = s * 0.8;
+        c.group.position.y = Math.abs(Math.sin(t * speed)) * 0.05;
+      }
+      const armsUp = (c, k = 1) => {
+        c.armL.rotation.z = -2.9 * k;
+        c.armR.rotation.z = 2.9 * k;
+        c.armL.rotation.x = c.armR.rotation.x = 0;
+      };
+
+      function animPipe(t) {
+        const P = pipe;
+        P.reset();
+        let p;
+        if (t < 3.8) {
+          p = path(
+            [
+              [0.3, 2.4, 3.2],
+              [2.6, 0, 0.7],
+              [3.1, 0, 0.7],
+              [3.8, 0, -1.2],
+            ],
+            t,
+          );
+          if (p.moving) swing(P, t, 12, 0.7);
+          if (t >= 2.6 && t < 3.1)
+            P.head.rotation.y = Math.sin(prog(t, 2.6, 3.1) * Math.PI * 2) * 0.7;
+          P.group.rotation.y = p.face ?? Math.PI;
+        } else if (t < 5.0) {
+          p = path(
+            [
+              [4.0, 0, -1.3],
+              [4.7, 0, -4.0],
+            ],
+            t,
+          );
+          if (p.moving) swing(P, t, 12, 0.7);
+          P.group.rotation.y = Math.PI;
+          if (t > 4.75) P.armR.rotation.x = -1.2 * Math.sin(prog(t, 4.75, 5.0) * Math.PI);
+        } else if (t < 9.4) {
+          // Happy dance next to the open chest.
+          const k = smooth(prog(t, 5.0, 5.4));
+          p = { x: lerp(0, 0.4, k), z: lerp(-4.0, -3.4, k) };
+          P.group.rotation.y = lerp(Math.PI, 0.5, k);
+          armsUp(P, 1);
+          P.armL.rotation.z += Math.sin(t * 10) * 0.25;
+          P.armR.rotation.z -= Math.sin(t * 10) * 0.25;
+          P.group.position.y = Math.abs(Math.sin(t * 8)) * 0.15;
+          P.legL.rotation.x = Math.sin(t * 8) * 0.3;
+          P.legR.rotation.x = -Math.sin(t * 8) * 0.3;
+        } else if (t < 12.1) {
+          p = { x: 0.4, z: -3.4 };
+          P.group.rotation.y = lerp(0.5, 0.15, smooth(prog(t, 9.4, 9.55)));
+          P.head.rotation.y = -0.15;
+          P.setFace("shock");
+          P.armL.rotation.z = -0.9;
+          P.armR.rotation.z = 0.9;
+          if (t >= 11.0)
+            P.group.rotation.y =
+              Math.atan2(-1.3 - 0.4, -4.8 + 3.4) * smooth(prog(t, 11.2, 11.6)) + 0.15;
+        } else if (t < 13.4) {
+          p = path(
+            [
+              [12.1, 0.4, -3.4],
+              [13.1, 0.1, -1.6],
+            ],
+            t,
+          );
+          if (p.moving) swing(P, t, 18, 0.9);
+          P.group.rotation.y = 0.1;
+          P.setFace("shock");
+        } else if (t < 15.2) {
+          p = { x: 0, z: -2.4 };
+          P.group.rotation.y = 0;
+          P.setFace(t > 14.5 ? "smirk" : "happy");
+          P.head.rotation.x = t > 14.5 ? -0.08 : 0;
+        } else if (t < 21.3) {
+          p = path(
+            [
+              [15.4, 0, -2.4],
+              [16.4, 0.85, -1.75],
+            ],
+            t,
+          );
+          if (p.moving) swing(P, t, 11, 0.6);
+          P.group.rotation.y = p.moving ? p.face : 0;
+          P.setFace("smirk");
+          // Punch the button.
+          const pk = prog(t, 17.5, 17.68),
+            back = prog(t, 17.85, 18.1);
+          P.armR.rotation.x = -1.55 * (smooth(pk) - smooth(back));
+        } else {
+          p = path(
+            [
+              [21.3, 0, -1.2],
+              [21.9, 0, 0.15],
+            ],
+            t,
+          );
+          if (p.moving) swing(P, t, 12, 0.7);
+          P.group.rotation.y = 0;
+          if (t >= 21.9) {
+            P.head.rotation.x = t < 22.2 ? -0.45 : t < 23.4 ? -0.1 : 0.55;
+            const reach = smooth(prog(t, 21.95, 22.15));
+            P.armL.rotation.x = P.armR.rotation.x = -1.3 * reach;
+            if (t >= 23.4) P.group.position.y = Math.abs(Math.sin(t * 9)) * 0.06;
+          }
+        }
+        P.group.position.x = p.x;
+        P.group.position.z = p.z;
+      }
+
+      const goldAt = new THREE.Vector3();
+      function animFriend(t) {
+        const F = friend;
+        F.reset();
+        let gold = null; // where the held gold block is, if visible
+        if (t < 7.6) {
+          // Peeking from behind the tree trunk.
+          const peek = t < 1.6 ? 0.5 : t < 5.75 ? 0 : 0.85 * smooth(prog(t, 5.75, 5.95));
+          F.group.position.set(-4.6 + peek, 0, 2.6);
+          F.group.rotation.y = 0.95;
+          F.group.rotation.z = -peek * 0.3;
+          F.setFace(t > 6.0 ? "grin" : "happy");
+          if (t > 6.0) F.head.rotation.y = Math.sin((t - 6.0) * 5) * 0.12;
+        } else if (t < 9.0) {
+          const p = path(
+            [
+              [7.6, -4.4, 2.2],
+              [8.75, -0.05, 0.4],
+            ],
+            t,
+          );
+          F.group.position.set(p.x, -0.08, p.z);
+          F.group.rotation.y = p.moving ? p.face : Math.PI;
+          // Tiptoe sneak: quick small steps, arms tucked forward.
+          const s = Math.sin(t * 22) * 0.35;
+          F.legL.rotation.x = s;
+          F.legR.rotation.x = -s;
+          F.armL.rotation.x = F.armR.rotation.x = -0.9;
+          F.group.rotation.x = 0.18;
+          F.setFace("grin");
+          if (t >= 8.75) {
+            F.group.rotation.y = Math.PI;
+            F.group.rotation.x = 0.45 * smooth(prog(t, 8.75, 9.0));
+            F.group.position.set(0, 0, 0.35);
+          }
+        } else if (t < 11.0) {
+          F.group.position.set(0, 0, 0.35);
+          F.group.rotation.y = Math.PI;
+          F.group.rotation.x = 0.45;
+          F.setFace("grin");
+          F.head.rotation.z = Math.sin(t * 6) * 0.1;
+        } else if (t < 13.35) {
+          const p = path(
+            [
+              [11.0, 0, -0.7],
+              [11.7, -1.3, -4.8],
+              [11.9, -1.3, -4.8],
+              [12.8, 0, -0.9],
+              [13.35, 0, 1.0],
+            ],
+            t,
+          );
+          F.group.position.set(p.x, 0, p.z);
+          if (p.moving) swing(F, t, 20, 1.0);
+          F.group.rotation.y = p.face ?? Math.PI + 0.3;
+          F.setFace("grin");
+          if (t >= 11.75) {
+            armsUp(F, 1);
+            gold = goldAt.set(p.x, 2.12, p.z);
+          }
+        } else if (t < 19.72) {
+          // Victory dance on the trap cell.
+          F.group.position.set(0, Math.abs(Math.sin(t * 9)) * 0.14, 1.0);
+          F.group.rotation.y = 0.6 + Math.sin(t * 4.5) * 0.25;
+          armsUp(F, 1);
+          F.legL.rotation.x = Math.sin(t * 9) * 0.35;
+          F.legR.rotation.x = -Math.sin(t * 9) * 0.35;
+          F.setFace(t >= 19.5 ? "shock" : "grin");
+          if (t >= 19.5) {
+            F.group.position.y = 0;
+            F.armL.rotation.z = -1.4;
+            F.armR.rotation.z = 1.4;
+            F.legL.rotation.x = F.legR.rotation.x = 0;
+          }
+          gold =
+            t < 19.5 ? goldAt.set(0, F.group.position.y + 2.12, 1.0) : goldAt.set(0, 2.12, 1.0);
+        } else {
+          // Fall, then flail in the water.
+          const dt = t - 19.72;
+          const y = Math.max(-6.15, -9 * dt * dt);
+          const inWater = y <= -6.15;
+          F.group.position.set(0, inWater ? y + Math.sin(t * 6) * 0.05 : y, 1.0);
+          F.group.rotation.y = inWater ? 0.4 + Math.sin(t * 3) * 0.3 : 0.6 + dt * 7;
+          F.setFace("shock");
+          F.armL.rotation.z = -1.6 - Math.sin(t * 16) * 0.6;
+          F.armR.rotation.z = 1.6 + Math.sin(t * 16) * 0.6;
+          F.legL.rotation.x = Math.sin(t * 14) * 0.5;
+          F.legR.rotation.x = -Math.sin(t * 14) * 0.5;
+        }
+        // The gold: carried, flung up the shaft, then caught by Pipe.
+        if (t >= 19.72 && t < 21.6) {
+          const dt = t - 19.72;
+          gold = goldAt.set(0, 2.12 + 6 * dt - 1.2 * dt * dt, 1.0);
+        } else if (t >= 21.6 && t < 22.2) {
+          const k = prog(t, 21.6, 22.2);
+          gold = goldAt.set(0, lerp(7.5, 1.32, k * k), lerp(0.9, 0.78, k));
+        } else if (t >= 22.2) {
+          gold = goldAt.set(0, 1.32 + (t >= 23.4 ? Math.abs(Math.sin(t * 9)) * 0.06 : 0), 0.78);
+        }
+        heldGold.visible = !!gold;
+        if (gold) {
+          heldGold.position.copy(gold);
+          heldGold.rotation.y = t * 2;
+        }
+      }
+
+      function renderAt(t) {
+        // Freeze-frame: the world holds while the camera punches in.
+        const wt = t >= 9.6 && t < 10.4 ? 9.6 : t;
+        cam(t);
+        clouds.forEach((c, i) => (c.position.x = cloudX[i] + t * 0.25));
+        animPipe(wt);
+        animFriend(wt);
+
+        // Chest opens at 4.8 and stays open.
+        lid.rotation.x = -1.9 * easeOutBack(prog(wt, 4.8, 5.1));
+        glow.visible = wt >= 4.85;
+        roomFill.intensity = 5 * smooth(prog(wt, 4.8, 5.4));
+        loot.forEach((b, i) => {
+          b.rotation.y = wt * 0.6 + i;
+          b.scale.setScalar(0.6);
+          b.position.y = 0.45 + Math.sin(wt * 3 + i) * 0.08 + b.userData.base;
+          b.visible = !(i === 1 && wt >= 11.75);
+        });
+        torchLights.forEach((p, i) => (p.intensity = 6 + Math.sin(wt * 11 + i * 2) * 0.6));
+
+        // The painting ripples whenever someone passes through it.
+        let rip = 0;
+        for (const q of [3.45, 8.9, 12.95, 13.1, 21.5])
+          if (wt >= q && wt < q + 0.4) rip = Math.max(rip, 1 - (wt - q) / 0.4);
+        paint.scale.set(1 + 0.05 * rip * Math.sin(wt * 50), 1 - 0.03 * rip * Math.sin(wt * 50), 1);
+
+        // Button press and trap.
+        button.position.z = wt >= 17.66 && wt < 18.3 ? -1.03 : -1.07;
+        trapCover.visible = wt < 19.5;
+
+        // Sunglasses glint.
+        const g = prog(t, 14.95, 15.25);
+        star.visible = g > 0 && g < 1;
+        star.position.set(0.13, 1.5, -2.4 + 0.27);
+        star.scale.setScalar(Math.sin(g * Math.PI) * 1.1 + 0.001);
+        star.rotation.z = g * 2;
+        star.lookAt(camera.position);
+
+        W.renderBursts(wt);
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
