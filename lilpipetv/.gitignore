@@ -7,3 +7,5 @@ vo/
 .hyperframes/
 .media/
 sn/
+work-*/
+.*hf-transaction*/

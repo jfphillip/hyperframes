@@ -1,0 +1,1528 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #ffffff;
+        --accent: #ffd23f;
+        --live: #178a3e;
+        --die: #ff3b2f;
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #111;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--font-display);
+        background: #111;
+      }
+      canvas.px {
+        position: absolute;
+        image-rendering: pixelated;
+      }
+      .scene {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+      .scene > canvas.bg {
+        left: 0;
+        top: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      .fx {
+        position: absolute;
+      }
+      /* Labels */
+      .verdict {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 330px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        text-align: center;
+      }
+      .chip {
+        display: block;
+        color: var(--ink);
+        font-size: 56px;
+        padding: 12px 30px 8px;
+        border: 8px solid var(--stroke);
+        box-shadow: 0 10px 0 var(--stroke);
+      }
+      .chip.live {
+        background: var(--live);
+      }
+      .chip.die {
+        background: var(--die);
+      }
+      .chip.gold {
+        background: var(--accent);
+        color: var(--stroke);
+      }
+      .name {
+        display: block;
+        color: var(--ink);
+        font-size: 92px;
+        line-height: 1;
+        -webkit-text-stroke: 20px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 10px 0 var(--stroke);
+      }
+      .sub {
+        display: block;
+        color: var(--accent);
+        font-size: 58px;
+        line-height: 1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+      }
+      .big {
+        display: block;
+        color: var(--ink);
+        font-size: 124px;
+        line-height: 1;
+        -webkit-text-stroke: 24px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 12px 0 var(--stroke);
+      }
+      .huge {
+        display: block;
+        color: var(--ink);
+        font-size: 300px;
+        line-height: 1;
+        -webkit-text-stroke: 36px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 18px 0 var(--stroke);
+      }
+      .red {
+        color: var(--die);
+      }
+      .yellow {
+        color: var(--accent);
+      }
+      .card {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 560px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .strike {
+        position: relative;
+        display: inline-block;
+      }
+      .strike i {
+        position: absolute;
+        left: -20px;
+        right: -20px;
+        top: 46%;
+        height: 26px;
+        background: var(--die);
+        border: 6px solid var(--stroke);
+        transform-origin: left center;
+      }
+      /* Grid of the ten worlds */
+      #grid,
+      #grid2 {
+        position: absolute;
+        inset: 0;
+        background: #141428;
+      }
+      .tiles {
+        position: absolute;
+        left: 60px;
+        top: 470px;
+        width: 960px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px 24px;
+      }
+      .tile {
+        position: relative;
+        height: 118px;
+        border: 6px solid var(--stroke);
+        overflow: hidden;
+      }
+      .tile canvas {
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+      }
+      .tile b {
+        position: absolute;
+        left: 10px;
+        bottom: 6px;
+        color: #fff;
+        font-weight: normal;
+        font-size: 30px;
+        -webkit-text-stroke: 8px var(--stroke);
+        paint-order: stroke fill;
+      }
+      .tile .x {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 40, 30, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 90px;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+      }
+      .tile .ok {
+        position: absolute;
+        inset: 0;
+        background: rgba(23, 138, 62, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 60px;
+        -webkit-text-stroke: 12px var(--stroke);
+        paint-order: stroke fill;
+      }
+      .colhead {
+        position: absolute;
+        top: 400px;
+        width: 468px;
+        text-align: center;
+        font-size: 50px;
+        -webkit-text-stroke: 12px var(--stroke);
+        paint-order: stroke fill;
+      }
+      #hooktext,
+      #outrotext {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 190px;
+        text-align: center;
+      }
+      #hooktext .big,
+      #outrotext .big {
+        font-size: 96px;
+      }
+      #mcq {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 640px;
+        text-align: center;
+      }
+      /* Score */
+      #score {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 196px;
+        display: flex;
+        justify-content: center;
+        gap: 22px;
+      }
+      #score .chip {
+        font-size: 40px;
+        padding: 8px 22px 4px;
+        border-width: 6px;
+        box-shadow: 0 6px 0 var(--stroke);
+      }
+      /* Minecraft 3D */
+      #mcwrap {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, #3f9fd6 0%, #9ed4e8 42%, #f4e6c2 62%, #e9dcb8 100%);
+      }
+      #night {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        background: linear-gradient(180deg, #050816 0%, #141b3c 55%, #2a2346 100%);
+      }
+      #moon {
+        position: absolute;
+        right: 170px;
+        top: 360px;
+        width: 110px;
+        height: 110px;
+        background: #f3f1dc;
+        box-shadow: 0 0 60px rgba(240, 240, 210, 0.5);
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #hotbar {
+        position: absolute;
+        left: 120px;
+        top: 960px;
+        display: flex;
+        gap: 6px;
+      }
+      #hotbar div {
+        width: 84px;
+        height: 84px;
+        background: rgba(40, 40, 40, 0.7);
+        border: 6px solid #cfcfcf;
+        position: relative;
+      }
+      #hotbar div:first-child {
+        border-color: #ffffff;
+      }
+      #logicon {
+        position: absolute;
+        left: 132px;
+        top: 972px;
+        width: 60px;
+        height: 60px;
+      }
+      #chain {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 330px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      #fall-dust {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 60%,
+          rgba(255, 255, 255, 0) 30%,
+          rgba(255, 30, 20, 0.5) 100%
+        );
+        opacity: 0;
+      }
+      /* Effects */
+      #storm {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 3000px;
+        height: 3000px;
+        margin: -1500px 0 0 -1500px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(140, 60, 255, 0) 0 34%,
+          rgba(150, 70, 255, 0.85) 36%,
+          rgba(90, 20, 200, 0.9) 60%
+        );
+      }
+      .boom {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          #fff6c8 0 18%,
+          #ffb03a 35%,
+          #ff4a1a 55%,
+          rgba(255, 60, 20, 0) 70%
+        );
+        opacity: 0;
+      }
+      .siren {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+      }
+      .needs {
+        position: absolute;
+        left: 120px;
+        top: 900px;
+        width: 840px;
+        padding: 26px 34px;
+        background: rgba(20, 40, 60, 0.85);
+        border: 6px solid var(--stroke);
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .need {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        color: #fff;
+        font-size: 40px;
+      }
+      .need span {
+        width: 300px;
+      }
+      .need div {
+        flex: 1;
+        height: 34px;
+        background: #263446;
+        border: 4px solid #0b141e;
+      }
+      .need div i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: #3ed16a;
+        transform-origin: left center;
+      }
+      .eyes {
+        position: absolute;
+        width: 60px;
+        height: 18px;
+      }
+      .eyes:before,
+      .eyes:after {
+        content: "";
+        position: absolute;
+        top: 0;
+        width: 18px;
+        height: 18px;
+        background: #fff;
+        box-shadow: inset 8px 6px 0 #111;
+      }
+      .eyes:before {
+        left: 0;
+      }
+      .eyes:after {
+        right: 0;
+      }
+      .plus {
+        position: absolute;
+        color: #ff5a6a;
+        font-size: 70px;
+        -webkit-text-stroke: 10px #fff;
+        paint-order: stroke fill;
+      }
+      .person {
+        position: absolute;
+        width: 16px;
+        height: 24px;
+        background: #ffd23f;
+        border: 4px solid #1b1b1b;
+      }
+      .coin {
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        background: #ffd23f;
+        border: 6px solid #a67c12;
+      }
+      #youdied {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 900px;
+        text-align: center;
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+        font-size: 120px;
+        letter-spacing: 0.04em;
+        color: #c0221a;
+        text-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 0.75) 20%,
+          rgba(0, 0, 0, 0.75) 80%,
+          rgba(0, 0, 0, 0)
+        );
+        padding: 30px 0;
+      }
+      #clock {
+        position: absolute;
+        right: 90px;
+        top: 900px;
+        padding: 16px 26px 10px;
+        background: #f4e4b8;
+        border: 8px solid #6b4a26;
+        color: #3a2214;
+        font-size: 64px;
+      }
+      #webs path {
+        fill: none;
+        stroke: #ffffff;
+        stroke-width: 10;
+        stroke-linecap: square;
+      }
+      /* Captions + overlays */
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1130px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 66px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1300px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+      #impact {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        mix-blend-mode: difference;
+        opacity: 0;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="59.6"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- HOOK: the ten worlds, five die -->
+      <div id="grid" class="clip" data-start="0" data-duration="7.8" data-track-index="0">
+        <div class="colhead" style="left: 60px; color: var(--live)">VIVIRÍAS</div>
+        <div class="colhead" style="left: 552px; color: var(--die)">MORIRÍAS</div>
+        <div class="tiles" id="tiles" data-layout-allow-overlap>
+          <div class="tile">
+            <canvas data-tile="ny" width="270" height="118"></canvas><b>SPIDER-MAN</b>
+          </div>
+          <div class="tile">
+            <canvas data-tile="gta" width="270" height="118"></canvas><b>GTA V</b>
+            <div class="x" id="x1">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="sims" width="270" height="118"></canvas><b>LOS SIMS</b>
+          </div>
+          <div class="tile">
+            <canvas data-tile="fort" width="270" height="118"></canvas><b>FORTNITE</b>
+            <div class="x" id="x2">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="poke" width="270" height="118"></canvas><b>POKÉMON</b>
+          </div>
+          <div class="tile">
+            <canvas data-tile="re" width="270" height="118"></canvas><b>RESIDENT EVIL</b>
+            <div class="x" id="x3">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="ac" width="270" height="118"></canvas><b>ANIMAL CROSSING</b>
+          </div>
+          <div class="tile">
+            <canvas data-tile="er" width="270" height="118"></canvas><b>ELDEN RING</b>
+            <div class="x" id="x4">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="star" width="270" height="118"></canvas><b>STARDEW VALLEY</b>
+          </div>
+          <div class="tile" id="mctile">
+            <canvas data-tile="mc" width="270" height="118"></canvas><b>MINECRAFT</b>
+            <div class="x" id="x5">X</div>
+          </div>
+        </div>
+        <div id="hooktext">
+          <span class="big">MORIRÍAS EN</span><span class="big red" id="hook5">5 DE 10</span>
+        </div>
+        <div id="mcq"><span class="huge yellow">?</span></div>
+      </div>
+
+      <!-- #5 -->
+      <div id="s-ny" class="scene clip" data-start="7.8" data-duration="3.1" data-track-index="1">
+        <canvas class="px bg" id="bg-ny" width="135" height="240"></canvas>
+        <svg id="webs" class="fx" width="1080" height="1920" viewBox="0 0 1080 1920">
+          <path id="web1" d="M -20 520 Q 520 980 1100 380" />
+          <path id="web2" d="M 1100 760 Q 600 1160 -20 640" />
+        </svg>
+        <div class="verdict" id="v-ny">
+          <span class="chip live">VIVIRÍAS</span><span class="name">NUEVA YORK</span
+          ><span class="sub">SPIDER-MAN</span>
+        </div>
+      </div>
+      <div
+        id="s-gta"
+        class="scene clip"
+        data-start="10.9"
+        data-duration="4.68"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-gta" width="135" height="240"></canvas>
+        <canvas
+          class="px fx"
+          id="police"
+          data-sprite="sp-police"
+          width="38"
+          height="18"
+          style="left: 360px; top: 1460px; width: 304px; height: 144px"
+        ></canvas>
+        <div
+          class="siren"
+          id="siren-r"
+          style="
+            background: radial-gradient(
+              ellipse at 40% 80%,
+              rgba(255, 30, 30, 0.55),
+              rgba(255, 30, 30, 0) 60%
+            );
+          "
+        ></div>
+        <div
+          class="siren"
+          id="siren-b"
+          style="
+            background: radial-gradient(
+              ellipse at 60% 80%,
+              rgba(40, 90, 255, 0.55),
+              rgba(40, 90, 255, 0) 60%
+            );
+          "
+        ></div>
+        <div class="boom" id="boom1" style="left: 600px; top: 1280px"></div>
+        <div class="verdict" id="v-gta">
+          <span class="chip die">MORIRÍAS</span><span class="name">LOS SANTOS</span
+          ><span class="sub">GTA V</span>
+        </div>
+      </div>
+      <!-- #4 -->
+      <div
+        id="s-sims"
+        class="scene clip"
+        data-start="15.58"
+        data-duration="4.37"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-sims" width="135" height="240"></canvas>
+        <div class="needs">
+          <div class="need">
+            <span>HAMBRE</span>
+            <div><i id="n1"></i></div>
+          </div>
+          <div class="need">
+            <span>ENERGÍA</span>
+            <div><i id="n2"></i></div>
+          </div>
+          <div class="need">
+            <span>DIVERSIÓN</span>
+            <div><i id="n3"></i></div>
+          </div>
+        </div>
+        <div class="verdict" id="v-sims">
+          <span class="chip live">VIVIRÍAS</span><span class="name">LOS SIMS</span>
+        </div>
+      </div>
+      <div
+        id="s-fort"
+        class="scene clip"
+        data-start="19.95"
+        data-duration="4.69"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-fort" width="135" height="240"></canvas>
+        <canvas
+          class="px fx"
+          id="bus"
+          data-sprite="sp-bus"
+          width="46"
+          height="52"
+          style="left: 0; top: 760px; width: 368px; height: 416px"
+        ></canvas>
+        <div class="person" id="pp1" style="left: 300px; top: 1100px"></div>
+        <div class="person" id="pp2" style="left: 420px; top: 1100px"></div>
+        <div class="person" id="pp3" style="left: 540px; top: 1100px"></div>
+        <div class="person" id="pp4" style="left: 660px; top: 1100px"></div>
+        <div id="storm"></div>
+        <div class="verdict" id="v-fort">
+          <span class="chip die">MORIRÍAS</span><span class="name">FORTNITE</span
+          ><span class="sub" id="ninety">99 CONTRA TI</span>
+        </div>
+      </div>
+      <!-- #3 -->
+      <div
+        id="s-poke"
+        class="scene clip"
+        data-start="24.64"
+        data-duration="2.81"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-poke" width="135" height="240"></canvas>
+        <div class="eyes" id="eyes" style="left: 150px; top: 1640px"></div>
+        <div class="plus" id="pl1" style="left: 470px; top: 820px">+</div>
+        <div class="plus" id="pl2" style="left: 600px; top: 860px">+</div>
+        <div class="plus" id="pl3" style="left: 540px; top: 780px">+</div>
+        <div class="verdict" id="v-poke">
+          <span class="chip live">VIVIRÍAS</span><span class="name">POKÉMON</span
+          ><span class="sub">CURARTE: GRATIS</span>
+        </div>
+      </div>
+      <div
+        id="s-re"
+        class="scene clip"
+        data-start="27.45"
+        data-duration="2.51"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-re" width="135" height="240"></canvas>
+        <canvas
+          class="px fx"
+          id="hands"
+          data-sprite="sp-hands"
+          width="60"
+          height="40"
+          style="left: 60px; top: 1600px; width: 960px; height: 640px"
+        ></canvas>
+        <canvas
+          class="px fx"
+          id="missile"
+          data-sprite="sp-missile"
+          width="28"
+          height="10"
+          style="left: 0; top: 0; width: 224px; height: 80px"
+        ></canvas>
+        <div class="boom" id="boom2" style="left: 240px; top: 900px"></div>
+        <div class="verdict" id="v-re">
+          <span class="chip die">MORIRÍAS</span><span class="name">RACCOON CITY</span
+          ><span class="sub">RESIDENT EVIL</span>
+        </div>
+      </div>
+      <!-- #2 -->
+      <div
+        id="s-ac"
+        class="scene clip"
+        data-start="29.96"
+        data-duration="3.92"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-ac" width="135" height="240"></canvas>
+        <canvas
+          class="px fx"
+          id="bag"
+          data-sprite="sp-bag"
+          width="28"
+          height="34"
+          style="left: 600px; top: 1260px; width: 224px; height: 272px"
+        ></canvas>
+        <div class="verdict" id="v-ac">
+          <span class="chip live">VIVIRÍAS</span><span class="name">ANIMAL<br />CROSSING</span
+          ><span class="sub" id="zero">0% INTERÉS</span>
+        </div>
+      </div>
+      <div
+        id="s-er"
+        class="scene clip"
+        data-start="33.88"
+        data-duration="3.02"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-er" width="135" height="240"></canvas>
+        <canvas
+          class="px fx"
+          id="boss"
+          data-sprite="sp-boss"
+          width="80"
+          height="120"
+          style="left: 220px; top: 800px; width: 640px; height: 960px"
+        ></canvas>
+        <div id="youdied">HAS MUERTO</div>
+        <div class="verdict" id="v-er">
+          <span class="chip die">MORIRÍAS</span><span class="name">ELDEN RING</span>
+        </div>
+      </div>
+      <!-- #1 -->
+      <div
+        id="s-star"
+        class="scene clip"
+        data-start="36.9"
+        data-duration="5.4"
+        data-track-index="1"
+      >
+        <canvas class="px bg" id="bg-star" width="135" height="240"></canvas>
+        <div id="clock">2:00 AM</div>
+        <div class="coin" id="c1" style="left: 300px; top: 1000px"></div>
+        <div class="coin" id="c2" style="left: 380px; top: 1000px"></div>
+        <div class="coin" id="c3" style="left: 460px; top: 1000px"></div>
+        <div class="verdict" id="v-star">
+          <span class="chip live">VIVIRÍAS</span><span class="name">STARDEW<br />VALLEY</span
+          ><span class="sub">SOLO PIERDES $</span>
+        </div>
+      </div>
+      <div id="mcwrap" class="clip" data-start="42.3" data-duration="13.25" data-track-index="1">
+        <div id="night"><div id="moon"></div></div>
+        <canvas id="world" width="1080" height="1920"></canvas>
+        <div id="fall-dust"></div>
+        <div class="verdict" id="v-mc">
+          <span class="chip die">MORIRÍAS</span><span class="name">MINECRAFT</span>
+        </div>
+        <div class="card" id="zombis" style="top: 720px">
+          <span class="big strike">ZOMBIS<i id="zstrike"></i></span>
+        </div>
+        <div id="hotbar">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <canvas class="px" id="logicon" data-sprite="sp-log" width="12" height="12"></canvas>
+        <div id="chain">
+          <span class="chip die" id="ch1">SIN MADERA</span>
+          <span class="chip die" id="ch2">SIN REFUGIO</span>
+          <span class="chip gold" id="ch3">LLEGA LA NOCHE</span>
+        </div>
+        <div class="card" id="creeper" style="top: 560px">
+          <span class="big strike">CREEPER<i id="cstrike"></i></span>
+        </div>
+        <div class="card" id="tree" style="top: 470px">
+          <span class="big">TE MATA</span><span class="big red">UN ÁRBOL</span>
+        </div>
+      </div>
+
+      <!-- OUTRO -->
+      <div id="grid2" class="clip" data-start="55.55" data-duration="4.05" data-track-index="0">
+        <div class="colhead" style="left: 60px; color: var(--live)">VIVIRÍAS 5</div>
+        <div class="colhead" style="left: 552px; color: var(--die)">MORIRÍAS 5</div>
+        <div class="tiles" data-layout-allow-overlap>
+          <div class="tile">
+            <canvas data-tile="ny" width="270" height="118"></canvas><b>SPIDER-MAN</b>
+            <div class="ok">VIVE</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="gta" width="270" height="118"></canvas><b>GTA V</b>
+            <div class="x">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="sims" width="270" height="118"></canvas><b>LOS SIMS</b>
+            <div class="ok">VIVE</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="fort" width="270" height="118"></canvas><b>FORTNITE</b>
+            <div class="x">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="poke" width="270" height="118"></canvas><b>POKÉMON</b>
+            <div class="ok">VIVE</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="re" width="270" height="118"></canvas><b>RESIDENT EVIL</b>
+            <div class="x">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="ac" width="270" height="118"></canvas><b>ANIMAL CROSSING</b>
+            <div class="ok">VIVE</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="er" width="270" height="118"></canvas><b>ELDEN RING</b>
+            <div class="x">X</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="star" width="270" height="118"></canvas><b>STARDEW VALLEY</b>
+            <div class="ok">VIVE</div>
+          </div>
+          <div class="tile">
+            <canvas data-tile="mc" width="270" height="118"></canvas><b>MINECRAFT</b>
+            <div class="x">X</div>
+          </div>
+        </div>
+        <div id="outrotext"><span class="big" id="out1">¿DÓNDE VIVIRÍAS?</span></div>
+      </div>
+
+      <!-- Numbers -->
+      <div id="n5" class="card clip" data-start="7.8" data-duration="0.8" data-track-index="3">
+        <span class="huge yellow" id="n5s">#5</span>
+      </div>
+      <div id="n4" class="card clip" data-start="15.58" data-duration="1.1" data-track-index="3">
+        <span class="huge yellow" id="n4s">#4</span>
+      </div>
+      <div id="n3" class="card clip" data-start="24.64" data-duration="0.85" data-track-index="3">
+        <span class="huge yellow" id="n3s">#3</span>
+      </div>
+      <div id="n2" class="card clip" data-start="29.96" data-duration="0.75" data-track-index="3">
+        <span class="huge yellow" id="n2s">#2</span>
+      </div>
+      <div id="n1" class="card clip" data-start="36.9" data-duration="1.4" data-track-index="3">
+        <span class="huge yellow" id="n1s">#1</span>
+      </div>
+
+      <div id="score" class="clip" data-start="7.8" data-duration="47.75" data-track-index="4">
+        <span class="chip live" id="sc-live">VIVIRÍAS 0</span
+        ><span class="chip die" id="sc-die">MORIRÍAS 0</span>
+      </div>
+
+      <div id="cap0" class="cap clip" data-start="0.2" data-duration="0.9" data-track-index="7">
+        <span>MORIRÍAS ANTES DE TU</span>
+      </div>
+      <div id="cap1" class="cap clip" data-start="1.1" data-duration="1.2" data-track-index="7">
+        <span>PRIMERA NOCHE EN CINCO</span>
+      </div>
+      <div id="cap2" class="cap clip" data-start="2.3" data-duration="1.0" data-track-index="7">
+        <span>DE ESTOS DIEZ MUNDOS</span>
+      </div>
+      <div id="cap3" class="cap clip" data-start="3.3" data-duration="1.06" data-track-index="7">
+        <span>DE VIDEOJUEGOS</span>
+      </div>
+      <div id="cap4" class="cap clip" data-start="4.36" data-duration="0.8" data-track-index="7">
+        <span>Y MINECRAFT ES UNO</span>
+      </div>
+      <div id="cap5" class="cap clip" data-start="5.16" data-duration="0.72" data-track-index="7">
+        <span>DE ELLOS</span>
+      </div>
+      <div id="cap6" class="cap clip" data-start="5.88" data-duration="0.58" data-track-index="7">
+        <span>PERO NO POR LA</span>
+      </div>
+      <div id="cap7" class="cap clip" data-start="6.46" data-duration="1.17" data-track-index="7">
+        <span>RAZÓN QUE CREES</span>
+      </div>
+      <div id="cap8" class="cap clip" data-start="7.8" data-duration="0.8" data-track-index="7">
+        <span>NÚMERO CINCO</span>
+      </div>
+      <div id="cap9" class="cap clip" data-start="8.6" data-duration="1.06" data-track-index="7">
+        <span>VIVIRÍAS EN LA NUEVA</span>
+      </div>
+      <div id="cap10" class="cap clip" data-start="9.66" data-duration="1.28" data-track-index="7">
+        <span>YORK DE SPIDER-MAN</span>
+      </div>
+      <div id="cap11" class="cap clip" data-start="10.94" data-duration="1.32" data-track-index="7">
+        <span>PERO EN LOS SANTOS</span>
+      </div>
+      <div id="cap12" class="cap clip" data-start="12.26" data-duration="0.89" data-track-index="7">
+        <span>DE GTA</span>
+      </div>
+      <div id="cap13" class="cap clip" data-start="13.22" data-duration="1.3" data-track-index="7">
+        <span>EL PELIGRO ES EL</span>
+      </div>
+      <div id="cap14" class="cap clip" data-start="14.52" data-duration="1.06" data-track-index="7">
+        <span>PROTAGONISTA</span>
+      </div>
+      <div id="cap15" class="cap clip" data-start="15.58" data-duration="1.13" data-track-index="7">
+        <span>NÚMERO CUATRO</span>
+      </div>
+      <div id="cap16" class="cap clip" data-start="16.74" data-duration="1.4" data-track-index="7">
+        <span>EN LOS SIMS TIENES CASA</span>
+      </div>
+      <div id="cap17" class="cap clip" data-start="18.14" data-duration="1.84" data-track-index="7">
+        <span>TRABAJO Y LA NEVERA LLENA</span>
+      </div>
+      <div id="cap18" class="cap clip" data-start="19.98" data-duration="1.04" data-track-index="7">
+        <span>EN FORTNITE CAES DE</span>
+      </div>
+      <div id="cap19" class="cap clip" data-start="21.02" data-duration="1.38" data-track-index="7">
+        <span>UN AUTOBÚS CON NOVENTA</span>
+      </div>
+      <div id="cap20" class="cap clip" data-start="22.4" data-duration="0.96" data-track-index="7">
+        <span>Y NUEVE PERSONAS QUE</span>
+      </div>
+      <div id="cap21" class="cap clip" data-start="23.36" data-duration="1.23" data-track-index="7">
+        <span>TE QUIEREN ELIMINAR</span>
+      </div>
+      <div id="cap22" class="cap clip" data-start="24.64" data-duration="0.9" data-track-index="7">
+        <span>NÚMERO TRES</span>
+      </div>
+      <div id="cap23" class="cap clip" data-start="25.54" data-duration="1.94" data-track-index="7">
+        <span>EN POKÉMON, CURARTE ES GRATIS</span>
+      </div>
+      <div id="cap24" class="cap clip" data-start="27.48" data-duration="1.2" data-track-index="7">
+        <span>A RACCOON CITY LA</span>
+      </div>
+      <div id="cap25" class="cap clip" data-start="28.68" data-duration="1.28" data-track-index="7">
+        <span>BORRARON CON UN MISIL</span>
+      </div>
+      <div id="cap26" class="cap clip" data-start="29.96" data-duration="0.8" data-track-index="7">
+        <span>NÚMERO DOS</span>
+      </div>
+      <div id="cap27" class="cap clip" data-start="30.76" data-duration="1.14" data-track-index="7">
+        <span>EN ANIMAL CROSSING TE</span>
+      </div>
+      <div id="cap28" class="cap clip" data-start="31.9" data-duration="1.93" data-track-index="7">
+        <span>PRESTAN DINERO SIN INTERESES</span>
+      </div>
+      <div id="cap29" class="cap clip" data-start="33.92" data-duration="0.98" data-track-index="7">
+        <span>EN ELDEN RING</span>
+      </div>
+      <div id="cap30" class="cap clip" data-start="34.9" data-duration="0.92" data-track-index="7">
+        <span>HASTA EL PRIMER JEFE</span>
+      </div>
+      <div id="cap31" class="cap clip" data-start="35.82" data-duration="1.08" data-track-index="7">
+        <span>QUIERE QUE ABANDONES</span>
+      </div>
+      <div id="cap32" class="cap clip" data-start="36.9" data-duration="1.11" data-track-index="7">
+        <span>Y EL NÚMERO UNO</span>
+      </div>
+      <div id="cap33" class="cap clip" data-start="38.38" data-duration="1.29" data-track-index="7">
+        <span>EN STARDEW VALLEY</span>
+      </div>
+      <div id="cap34" class="cap clip" data-start="39.72" data-duration="0.96" data-track-index="7">
+        <span>SI TE ACUESTAS TARDE</span>
+      </div>
+      <div id="cap35" class="cap clip" data-start="40.68" data-duration="0.86" data-track-index="7">
+        <span>SOLO PIERDES UN POCO</span>
+      </div>
+      <div id="cap36" class="cap clip" data-start="41.54" data-duration="0.78" data-track-index="7">
+        <span>DE DINERO</span>
+      </div>
+      <div id="cap37" class="cap clip" data-start="42.32" data-duration="1.15" data-track-index="7">
+        <span>Y EN MINECRAFT</span>
+      </div>
+      <div id="cap38" class="cap clip" data-start="43.98" data-duration="1.53" data-track-index="7">
+        <span>NO TE MATAN LOS ZOMBIS</span>
+      </div>
+      <div id="cap39" class="cap clip" data-start="45.9" data-duration="1.3" data-track-index="7">
+        <span>APARECES SIN NADA</span>
+      </div>
+      <div id="cap40" class="cap clip" data-start="47.2" data-duration="1.02" data-track-index="7">
+        <span>Y TODO EMPIEZA TALANDO</span>
+      </div>
+      <div id="cap41" class="cap clip" data-start="48.22" data-duration="1.51" data-track-index="7">
+        <span>UN ÁRBOL CON LOS PUÑOS</span>
+      </div>
+      <div id="cap42" class="cap clip" data-start="49.86" data-duration="1.38" data-track-index="7">
+        <span>SIN MADERA NO HAY REFUGIO</span>
+      </div>
+      <div id="cap43" class="cap clip" data-start="51.24" data-duration="0.96" data-track-index="7">
+        <span>Y SIN REFUGIO LLEGA</span>
+      </div>
+      <div id="cap44" class="cap clip" data-start="52.2" data-duration="0.85" data-track-index="7">
+        <span>LA NOCHE</span>
+      </div>
+      <div id="cap45" class="cap clip" data-start="53.16" data-duration="1.47" data-track-index="7">
+        <span>NO TE MATA UN CREEPER</span>
+      </div>
+      <div id="cap46" class="cap clip" data-start="54.92" data-duration="0.66" data-track-index="7">
+        <span>TE MATA UN ÁRBOL</span>
+      </div>
+      <div id="cap47" class="cap clip" data-start="55.58" data-duration="2.3" data-track-index="7">
+        <span>¿EN QUÉ MUNDO VIVIRÍAS TÚ?</span>
+      </div>
+      <div id="cap48" class="cap clip" data-start="57.88" data-duration="1.37" data-track-index="7">
+        <span>TE LEO EN LOS COMENTARIOS</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="59.6" data-track-index="5">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="59.6" data-track-index="6"></div>
+      <div id="impact" class="clip" data-start="0" data-duration="59.6" data-track-index="6"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="59.6"
+        data-track-index="8"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="59.6"
+        data-track-index="9"
+        data-volume="0.5"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="59.6"
+        data-track-index="10"
+        data-volume="0.18"
+        data-fade-out="1.5"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      [
+        "#impact",
+        "#flash",
+        "#mcq",
+        "#youdied",
+        "#fall-dust",
+        "#tree",
+        "#creeper",
+        "#zombis",
+        "#logicon",
+        "#hotbar",
+        "#chain .chip",
+        ".boom",
+        ".siren",
+      ].forEach((s) => tl.set(s, { opacity: 0 }, 0));
+      tl.set(["#x1", "#x2", "#x3", "#x4", "#x5"], { opacity: 0, scale: 2.5 }, 0);
+      const pop = (sel, at) =>
+        tl.fromTo(
+          sel,
+          { scale: 0.2, opacity: 0, y: 40 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.24, ease: "back.out(3)" },
+          at,
+        );
+      const slam = (sel, at, rot = 0) =>
+        tl.fromTo(
+          sel,
+          { scale: 3, opacity: 0, rotation: rot * 2 },
+          { scale: 1, opacity: 1, rotation: rot, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+      const impact = (at) => {
+        tl.to("#impact", { opacity: 1, duration: 0.001 }, at);
+        tl.to("#impact", { opacity: 0, duration: 0.001 }, at + 0.067);
+      };
+      const flash = (at, o = 0.8) => {
+        tl.to("#flash", { opacity: o, duration: 0.04 }, at);
+        tl.to("#flash", { opacity: 0, duration: 0.3 }, at + 0.04);
+      };
+      const shake = (sel, at, n = 5, amp = 14) =>
+        tl.fromTo(
+          sel,
+          { x: 0 },
+          { x: amp, duration: 0.04, ease: "none", yoyo: true, repeat: n },
+          at,
+        );
+      const pan = (sel, at, dur, from, to) =>
+        tl.fromTo(sel, { scale: from }, { scale: to, duration: dur, ease: "none" }, at);
+
+      // HOOK
+      tl.fromTo(
+        "#hook5",
+        { scale: 1 },
+        { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1 },
+        1.96,
+      );
+      ["#x1", "#x2", "#x3", "#x4", "#x5"].forEach((x, i) =>
+        tl.to(x, { opacity: 1, scale: 1, duration: 0.12, ease: "power4.out" }, 1.96 + i * 0.16),
+      );
+      impact(1.96);
+      shake("#tiles", 1.96, 7, 10);
+      // Zoom into the Minecraft tile on "Minecraft", then the question mark.
+      tl.set("#mctile", { zIndex: 5 }, 0);
+      tl.to(
+        "#mctile",
+        { scale: 2.0, x: -246, y: -173, duration: 0.45, ease: "power3.inOut" },
+        4.42,
+      );
+      tl.to("#hooktext", { opacity: 0, duration: 0.2 }, 4.42);
+      tl.fromTo(
+        "#mcq",
+        { opacity: 0, scale: 3, rotation: -20 },
+        { opacity: 1, scale: 1, rotation: -8, duration: 0.18, ease: "power4.out" },
+        6.46,
+      );
+      shake("#mcq", 6.64, 5, 10);
+      flash(7.76, 0.9);
+
+      // Number slams.
+      [
+        ["#n5s", 7.8],
+        ["#n4s", 15.58],
+        ["#n3s", 24.64],
+        ["#n2s", 29.96],
+        ["#n1s", 36.9],
+      ].forEach(([s, t]) => {
+        slam(s, t, -6);
+        impact(t);
+      });
+      // Verdict labels.
+      [
+        ["#v-ny", 8.6],
+        ["#v-gta", 11.7],
+        ["#v-sims", 16.74],
+        ["#v-fort", 20.2],
+        ["#v-poke", 25.54],
+        ["#v-re", 27.6],
+        ["#v-ac", 31.06],
+        ["#v-er", 34.16],
+        ["#v-star", 38.6],
+        ["#v-mc", 42.5],
+      ].forEach(([s, t]) => {
+        tl.fromTo(
+          s,
+          { scale: 0.3, opacity: 0, y: 40 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.24, ease: "back.out(3)" },
+          t,
+        );
+      });
+      tl.to("#v-mc", { opacity: 0, duration: 0.15 }, 44.4);
+
+      // NY: slow push, webs shoot across.
+      pan("#bg-ny", 7.8, 3.1, 1.0, 1.12);
+      ["#web1", "#web2"].forEach((w, i) =>
+        tl.fromTo(
+          w,
+          { strokeDasharray: 1600, strokeDashoffset: 1600 },
+          { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" },
+          8.7 + i * 0.7,
+        ),
+      );
+      // GTA: police car speeds in, sirens, explosion on "peligro".
+      pan("#bg-gta", 10.9, 4.68, 1.15, 1.0);
+      tl.fromTo("#police", { x: -900 }, { x: 0, duration: 0.5, ease: "power3.out" }, 11.2);
+      for (let k = 0; k < 14; k++) {
+        tl.to("#siren-r", { opacity: k % 2 ? 0 : 1, duration: 0.02 }, 11.3 + k * 0.25);
+        tl.to("#siren-b", { opacity: k % 2 ? 1 : 0, duration: 0.02 }, 11.3 + k * 0.25);
+      }
+      tl.fromTo(
+        "#boom1",
+        { opacity: 1, scale: 0.1 },
+        { opacity: 1, scale: 1.6, duration: 0.35, ease: "power3.out" },
+        13.4,
+      );
+      tl.to("#boom1", { opacity: 0, duration: 0.5 }, 13.8);
+      impact(13.4);
+      shake("#s-gta", 13.4, 7, 18);
+      // Sims: need bars fill.
+      pan("#bg-sims", 15.58, 4.37, 1.0, 1.08);
+      [
+        ["#n1", 18.94],
+        ["#n2", 17.74],
+        ["#n3", 18.14],
+      ].forEach(([s, t]) =>
+        tl.fromTo(s, { scaleX: 0.1 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, t - 0.4),
+      );
+      // Fortnite: bus crosses, people drop, storm closes.
+      tl.fromTo("#bus", { x: -400, y: 0 }, { x: 1200, y: -80, duration: 4.2, ease: "none" }, 19.95);
+      ["#pp1", "#pp2", "#pp3", "#pp4"].forEach((p, i) =>
+        tl.fromTo(
+          p,
+          { y: -300, opacity: 0 },
+          { y: 600, opacity: 1, duration: 1.4, ease: "power1.in" },
+          20.7 + i * 0.25,
+        ),
+      );
+      tl.fromTo("#storm", { scale: 1.6 }, { scale: 0.5, duration: 2.6, ease: "power2.in" }, 21.9);
+      tl.fromTo(
+        "#ninety",
+        { scale: 1 },
+        { scale: 1.2, duration: 0.12, yoyo: true, repeat: 1 },
+        22.06,
+      );
+      // Pokémon-style clinic: healing pluses rise, eyes blink in the grass.
+      pan("#bg-poke", 24.64, 2.81, 1.08, 1.0);
+      ["#pl1", "#pl2", "#pl3"].forEach((p, i) =>
+        tl.fromTo(
+          p,
+          { y: 60, opacity: 0, scale: 0.5 },
+          { y: -120, opacity: 1, scale: 1.2, duration: 0.8, ease: "power2.out" },
+          26.36 + i * 0.12,
+        ),
+      );
+      tl.fromTo(
+        "#eyes",
+        { scaleY: 1 },
+        { scaleY: 0.1, duration: 0.06, yoyo: true, repeat: 3 },
+        26.0,
+      );
+      // Raccoon City: hands rise, missile, explosion, white-out.
+      tl.fromTo("#hands", { y: 300 }, { y: 0, duration: 0.6, ease: "back.out(2)" }, 27.5);
+      tl.fromTo(
+        "#missile",
+        { x: 1100, y: 150, rotation: 150 },
+        { x: 420, y: 980, rotation: 130, duration: 0.6, ease: "power2.in" },
+        28.7,
+      );
+      tl.fromTo(
+        "#boom2",
+        { opacity: 1, scale: 0.1 },
+        { opacity: 1, scale: 2.4, duration: 0.3, ease: "power3.out" },
+        29.3,
+      );
+      flash(29.32, 1);
+      impact(29.3);
+      shake("#s-re", 29.3, 7, 20);
+      // Animal Crossing-style island: bag bounces, 0% pulses.
+      pan("#bg-ac", 29.96, 3.92, 1.0, 1.08);
+      tl.fromTo("#bag", { y: -900 }, { y: 0, duration: 0.5, ease: "bounce.out" }, 32.0);
+      tl.fromTo(
+        "#zero",
+        { scale: 1 },
+        { scale: 1.25, duration: 0.14, yoyo: true, repeat: 3 },
+        32.62,
+      );
+      // Elden Ring-style boss: rises, eyes flare, "HAS MUERTO".
+      tl.fromTo(
+        "#boss",
+        { y: 500, scale: 0.8 },
+        { y: 0, scale: 1.1, duration: 1.2, ease: "power2.out" },
+        34.0,
+      );
+      impact(35.54);
+      shake("#s-er", 35.54, 7, 16);
+      tl.fromTo(
+        "#youdied",
+        { opacity: 0, scale: 1.2 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "power2.out" },
+        36.0,
+      );
+      // Stardew-style farm: clock, coins fall away.
+      pan("#bg-star", 36.9, 5.4, 1.06, 1.0);
+      tl.fromTo(
+        "#clock",
+        { scale: 0.2, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.24, ease: "back.out(3)" },
+        39.92,
+      );
+      shake("#clock", 40.2, 5, 8);
+      ["#c1", "#c2", "#c3"].forEach((c, i) =>
+        tl.fromTo(
+          c,
+          { y: 0, opacity: 1, rotation: 0 },
+          { y: 900, opacity: 0, rotation: 200, duration: 0.9, ease: "power2.in" },
+          40.9 + i * 0.12,
+        ),
+      );
+
+      // Minecraft overlays.
+      pop("#zombis", 43.98);
+      tl.fromTo("#zstrike", { scaleX: 0 }, { scaleX: 1, duration: 0.15, ease: "power3.out" }, 44.6);
+      tl.to("#zombis", { opacity: 0, duration: 0.15 }, 45.6);
+      pop("#hotbar", 46.32);
+      tl.fromTo(
+        "#logicon",
+        { opacity: 1, x: 300, y: -500, scale: 3 },
+        { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.4, ease: "power2.in" },
+        48.94,
+      );
+      flash(49.34, 0.4);
+      tl.to("#logicon", { opacity: 0, duration: 0.1 }, 49.86);
+      slam("#ch1", 49.86, -3);
+      slam("#ch2", 50.44, 3);
+      slam("#ch3", 51.98, -2);
+      tl.to("#chain .chip", { opacity: 0, duration: 0.15 }, 52.9);
+      tl.to("#hotbar", { opacity: 0, duration: 0.15 }, 52.9);
+      tl.fromTo(
+        "#night",
+        { opacity: 0 },
+        { opacity: 1, duration: 1.2, ease: "power1.inOut" },
+        51.3,
+      );
+      pop("#creeper", 53.16);
+      tl.fromTo("#cstrike", { scaleX: 0 }, { scaleX: 1, duration: 0.15, ease: "power3.out" }, 54.1);
+      tl.to("#creeper", { opacity: 0, duration: 0.12 }, 54.6);
+      slam("#tree", 54.92, -4);
+      impact(55.3);
+      tl.fromTo("#fall-dust", { opacity: 0 }, { opacity: 1, duration: 0.05 }, 55.3);
+
+      // OUTRO
+      tl.fromTo(
+        "#out1",
+        { scale: 0.3, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.24, ease: "back.out(3)" },
+        55.6,
+      );
+      tl.fromTo("#out1", { scale: 1 }, { scale: 1.08, duration: 0.2, yoyo: true, repeat: 5 }, 57.4);
+
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 16 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import { drawAll } from "./lib/scenes.js";
+      import * as W from "./lib/world.js";
+      drawAll();
+      const { THREE, scene, camera, renderer, lerp, smooth, prog, mulberry32 } = W;
+      const { pipe, friend, heldGold, star } = W;
+      friend.group.visible = false;
+      heldGold.visible = false;
+      star.visible = false;
+      pipe.group.rotation.order = "YXZ";
+
+      // Lights, for nightfall.
+      let sun = null,
+        hemi = null;
+      scene.traverse((o) => {
+        if (o.isDirectionalLight) sun = o;
+        if (o.isHemisphereLight) hemi = o;
+      });
+      const dayFog = new THREE.Color("#d8e6d2"),
+        nightFog = new THREE.Color("#141b3c");
+
+      // The killer tree.
+      const tree = new THREE.Group();
+      const logMat = W.M(W.log);
+      const leafMat = new THREE.MeshLambertMaterial({ color: "#37802c" });
+      const leafMat2 = new THREE.MeshLambertMaterial({ color: "#2b6a22" });
+      const box = new THREE.BoxGeometry(1, 1, 1);
+      for (let y = 0; y < 4; y++) {
+        const b = new THREE.Mesh(box, logMat);
+        b.position.set(0, y + 0.5, 0);
+        b.castShadow = true;
+        tree.add(b);
+      }
+      for (let dx = -1; dx <= 1; dx++)
+        for (let dz = -1; dz <= 1; dz++)
+          for (let dy = 0; dy < 2; dy++) {
+            const b = new THREE.Mesh(box, (dx + dz + dy) % 2 ? leafMat : leafMat2);
+            b.position.set(dx, 3.5 + dy, dz);
+            b.castShadow = true;
+            tree.add(b);
+          }
+      tree.position.set(4.5, 0, 5.0);
+      scene.add(tree);
+
+      const chipMat = new THREE.MeshLambertMaterial({ color: "#8a6a3a" });
+      const add = (...a) => W.bursts.push(W.burst(...a));
+      add(501, [4.0, 1.2, 4.6], 48.2, chipMat, 8, 1.4);
+      add(502, [4.0, 1.2, 4.6], 48.6, chipMat, 8, 1.4);
+      add(503, [4.0, 1.2, 4.6], 48.94, chipMat, 12, 1.8);
+      add(504, [3.0, 0.2, 4.6], 55.3, W.dustMat, 24, 2.6);
+
+      const shots = [
+        [42.3, 47.8, [3.6, 2.4, 11.5], [3.6, 2.0, 5], [3.6, 2.2, 10.2], [3.6, 1.9, 5], 50, 48],
+        [47.8, 49.86, [3.4, 1.5, 7.6], [3.9, 1.3, 5], [3.5, 1.5, 7.3], [3.9, 1.3, 5], 46, 44],
+        [49.86, 54.9, [3.5, 3.0, 12.5], [3.6, 2.2, 5], [3.6, 2.8, 11.5], [3.6, 2.2, 5], 50, 48],
+        [54.9, 55.6, [3.0, 1.4, 8.6], [3.6, 1.0, 5], [3.1, 1.3, 8.2], [3.6, 1.0, 5], 52, 48],
+      ];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      const FALL0 = 54.95,
+        FALL1 = 55.3;
+
+      const scoreEvents = [
+        [8.6, 1, 0],
+        [11.7, 1, 1],
+        [16.74, 2, 1],
+        [20.2, 2, 2],
+        [25.54, 3, 2],
+        [27.6, 3, 3],
+        [31.06, 4, 3],
+        [34.16, 4, 4],
+        [38.6, 5, 4],
+        [42.5, 5, 5],
+      ];
+      const scLive = document.getElementById("sc-live"),
+        scDie = document.getElementById("sc-die");
+
+      function renderAt(t) {
+        let live = 0,
+          die = 0;
+        for (const [at, l, d] of scoreEvents) if (t >= at) [live, die] = [l, d];
+        scLive.textContent = "VIVIRÍAS " + live;
+        scDie.textContent = "MORIRÍAS " + die;
+
+        if (t < 42.25 || t >= 55.6) return;
+        const night = smooth(prog(t, 51.3, 52.5));
+        if (sun) sun.intensity = 3.0 * (1 - 0.85 * night);
+        if (hemi) hemi.intensity = 1.0 * (1 - 0.6 * night);
+        scene.fog.color.copy(dayFog).lerp(nightFog, night);
+        W.clouds.forEach((c) => (c.visible = night < 0.5));
+
+        // Pipe faces the tree and punches it with bare fists.
+        const P = pipe;
+        P.reset();
+        P.group.position.set(3.25, 0, 5.0);
+        P.group.rotation.y = Math.PI / 2;
+        P.setFace(t >= 52.3 ? "shock" : "smirk");
+        if (t >= 46.3 && t < 47.6) {
+          // "Apareces sin nada": shrug, empty hands.
+          const k = Math.sin(prog(t, 46.3, 47.6) * Math.PI);
+          P.armL.rotation.z = -0.9 * k;
+          P.armR.rotation.z = 0.9 * k;
+          P.group.rotation.y = lerp(Math.PI / 2, 0.3, k);
+        }
+        let shakeTree = 0;
+        if (t >= 47.9 && t < 49.3) {
+          const ph = (t - 47.9) * 6;
+          P.armR.rotation.x = -1.5 * Math.max(0, Math.sin(ph * Math.PI));
+          shakeTree = Math.max(0, Math.sin(ph * Math.PI)) * 0.06;
+        }
+        if (t >= 52.3 && t < FALL0) {
+          P.group.rotation.y = 0.4;
+          P.head.rotation.x = -0.3;
+        }
+        // The tree falls on Pipe.
+        const fk = prog(t, FALL0, FALL1);
+        tree.rotation.z = (Math.PI / 2) * 0.92 * fk * fk;
+        tree.position.x = 4.5 + shakeTree * Math.sin(t * 80);
+        if (t >= FALL1) {
+          P.group.scale.set(1.35, 0.22, 1.35);
+          P.setFace("shock");
+        } else P.group.scale.setScalar(0.95);
+
+        const s = shots.find((x) => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+        const k = smooth(prog(t, s[0], s[1]));
+        const pos = v3(s[2]).lerp(v3(s[4]), k),
+          look = v3(s[3]).lerp(v3(s[5]), k);
+        let sh = 0;
+        for (const q of [48.94, FALL1]) if (t >= q && t < q + 0.3) sh = 1 - (t - q) / 0.3;
+        pos.x += Math.sin(t * 90) * 0.08 * sh;
+        pos.y += Math.cos(t * 77) * 0.08 * sh;
+        camera.up.set(0, 1, 0);
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = lerp(s[6], s[7], k) - 8 * sh * sh;
+        camera.updateProjectionMatrix();
+        W.renderBursts(t);
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
