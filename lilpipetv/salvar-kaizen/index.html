@@ -1,0 +1,1091 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #ffffff;
+        --accent: #ffd23f;
+        --kaizen: #3fd6c6;
+        --like: #2f7bff;
+        --ok: #1f9e4a;
+        --die: #ff3b2f;
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--font-display);
+        background: #000;
+      }
+      .sky {
+        position: absolute;
+        inset: 0;
+      }
+      #sky-dawn {
+        background: linear-gradient(180deg, #2c2c5c 0%, #8a5a8a 35%, #f0906a 62%, #ffd08a 100%);
+      }
+      #sky-red {
+        background: linear-gradient(180deg, #120202 0%, #4a0808 40%, #9a1c10 68%, #c8401c 100%);
+        opacity: 0;
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 55%,
+          rgba(0, 0, 0, 0.5) 100%
+        );
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      #impact {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        mix-blend-mode: difference;
+        opacity: 0;
+      }
+      /* LIKE = AYUDAR banner */
+      #banner {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 190px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      #banner .card {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 16px 34px 10px;
+        background: #ffffff;
+        border: 8px solid var(--stroke);
+        border-radius: 22px;
+        box-shadow: 0 10px 0 var(--stroke);
+        font-size: 64px;
+        line-height: 1;
+      }
+      .like {
+        color: var(--like);
+      }
+      .eq {
+        color: var(--stroke);
+      }
+      .help {
+        color: var(--ok);
+      }
+      .part {
+        color: var(--die);
+      }
+      .num {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 330px;
+        text-align: center;
+        font-size: 190px;
+        line-height: 1;
+        color: var(--die);
+        -webkit-text-stroke: 28px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 14px 0 var(--stroke);
+      }
+      #hearts {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 560px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+      }
+      #hearts svg {
+        width: 72px;
+        height: 64px;
+      }
+      #hearts path {
+        stroke: var(--stroke);
+        stroke-width: 7;
+      }
+      .heart-off {
+        fill: #555a66;
+      }
+      .heart-on {
+        fill: #ff3b5c;
+      }
+      #plus {
+        position: absolute;
+        left: 720px;
+        top: 560px;
+        color: var(--like);
+        font-size: 64px;
+        -webkit-text-stroke: 12px #fff;
+        paint-order: stroke fill;
+      }
+      /* Attempt labels and verdict stamps */
+      .tag {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 700px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+      }
+      .chip {
+        display: block;
+        color: #fff;
+        font-size: 50px;
+        padding: 12px 30px 8px;
+        border: 8px solid var(--stroke);
+        box-shadow: 0 10px 0 var(--stroke);
+        background: #2a2a33;
+      }
+      .chip.gold {
+        background: var(--accent);
+        color: var(--stroke);
+      }
+      .stamp {
+        position: absolute;
+        left: 50%;
+        top: 760px;
+        width: 300px;
+        height: 300px;
+        margin-left: -150px;
+      }
+      .stamp path {
+        fill: none;
+        stroke-linecap: square;
+        stroke-width: 60;
+      }
+      .big {
+        display: block;
+        color: var(--ink);
+        font-size: 110px;
+        line-height: 1;
+        -webkit-text-stroke: 22px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 12px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1130px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 64px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      .cap.kaizen span {
+        color: var(--kaizen);
+      }
+      .cap.pipe span {
+        color: var(--accent);
+      }
+      .cap b {
+        font-weight: normal;
+        font-size: 44px;
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1300px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="30.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="skies" class="clip" data-start="0" data-duration="30.5" data-track-index="0">
+        <div class="sky" id="sky-dawn"></div>
+        <div class="sky" id="sky-red"></div>
+      </div>
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="30.5"
+        data-track-index="1"
+      ></canvas>
+      <div
+        id="vignette"
+        class="clip"
+        data-start="0"
+        data-duration="30.5"
+        data-track-index="2"
+      ></div>
+
+      <div id="banner" class="clip" data-start="0" data-duration="30.5" data-track-index="3">
+        <div class="card" id="card-help">
+          <span class="like">LIKE</span><span class="eq">=</span><span class="help">AYUDAR</span>
+        </div>
+      </div>
+      <div
+        id="banner2"
+        class="clip"
+        data-start="25.2"
+        data-duration="5.3"
+        data-track-index="4"
+        style="
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 190px;
+          display: flex;
+          justify-content: center;
+        "
+      >
+        <div
+          class="card"
+          style="
+            display: flex;
+            gap: 18px;
+            padding: 16px 34px 10px;
+            background: #fff;
+            border: 8px solid #1b1b1b;
+            border-radius: 22px;
+            box-shadow: 0 10px 0 #1b1b1b;
+            font-size: 64px;
+            line-height: 1;
+          "
+        >
+          <span class="like">LIKE</span><span class="eq">=</span><span class="part">PARTE 2</span>
+        </div>
+      </div>
+      <div id="n3" class="num clip" data-start="0" data-duration="11.8" data-track-index="4">3</div>
+      <div id="n2" class="num clip" data-start="11.8" data-duration="6.0" data-track-index="4">
+        2
+      </div>
+      <div id="n1" class="num clip" data-start="17.8" data-duration="3.8" data-track-index="4">
+        1
+      </div>
+      <div id="hearts" class="clip" data-start="0" data-duration="25.2" data-track-index="4">
+        <svg viewBox="0 0 36 32">
+          <path id="h1" class="heart-off" d="M18 30 L4 16 A8 8 0 0 1 18 6 A8 8 0 0 1 32 16 Z" />
+        </svg>
+        <svg viewBox="0 0 36 32">
+          <path id="h2" class="heart-off" d="M18 30 L4 16 A8 8 0 0 1 18 6 A8 8 0 0 1 32 16 Z" />
+        </svg>
+        <svg viewBox="0 0 36 32">
+          <path id="h3" class="heart-off" d="M18 30 L4 16 A8 8 0 0 1 18 6 A8 8 0 0 1 32 16 Z" />
+        </svg>
+      </div>
+      <div id="plus" class="clip" data-start="0" data-duration="25.2" data-track-index="5">
+        +1 LIKE
+      </div>
+
+      <div id="t1" class="tag clip" data-start="7.5" data-duration="4.2" data-track-index="5">
+        <span class="chip">INTENTO 1</span><span class="chip gold">COMO UN PRO</span>
+      </div>
+      <div id="t2" class="tag clip" data-start="12.2" data-duration="5.5" data-track-index="5">
+        <span class="chip">INTENTO 2</span><span class="chip gold">CON EXPLOSIVOS</span>
+      </div>
+      <div id="t3" class="tag clip" data-start="18.38" data-duration="4.0" data-track-index="5">
+        <span class="chip">INTENTO 3</span><span class="chip gold">COMO JUGADOR PROMEDIO</span>
+      </div>
+      <svg
+        id="x1"
+        class="stamp clip"
+        viewBox="0 0 300 300"
+        data-start="11.0"
+        data-duration="0.75"
+        data-track-index="6"
+      >
+        <path d="M50 50 L250 250 M250 50 L50 250" stroke="#1b1b1b" stroke-width="84" />
+        <path d="M50 50 L250 250 M250 50 L50 250" stroke="#ff3b2f" />
+      </svg>
+      <svg
+        id="x2"
+        class="stamp clip"
+        viewBox="0 0 300 300"
+        data-start="16.5"
+        data-duration="1.25"
+        data-track-index="6"
+      >
+        <path d="M50 50 L250 250 M250 50 L50 250" stroke="#1b1b1b" stroke-width="84" />
+        <path d="M50 50 L250 250 M250 50 L50 250" stroke="#ff3b2f" />
+      </svg>
+      <svg
+        id="ok"
+        class="stamp clip"
+        viewBox="0 0 300 300"
+        data-start="21.8"
+        data-duration="1.4"
+        data-track-index="6"
+      >
+        <path d="M40 160 L120 240 L265 60" stroke="#1b1b1b" stroke-width="84" />
+        <path d="M40 160 L120 240 L265 60" stroke="#1f9e4a" />
+      </svg>
+      <div
+        id="saved"
+        class="tag clip"
+        data-start="21.8"
+        data-duration="3.4"
+        data-track-index="5"
+        style="top: 330px"
+      >
+        <span class="big" style="color: #3ed16a">¡SALVADO!</span>
+      </div>
+
+      <div
+        id="cap0"
+        class="cap clip pipe"
+        data-start="0.34"
+        data-duration="1.56"
+        data-track-index="12"
+      >
+        <span><b>PIPE:</b> ¡KAIZEN ESTÁ ATRAPADO!</span>
+      </div>
+      <div
+        id="cap1"
+        class="cap clip pipe"
+        data-start="1.92"
+        data-duration="1.32"
+        data-track-index="12"
+      >
+        <span>CADA LIKE ES UN INTENTO</span>
+      </div>
+      <div
+        id="cap2"
+        class="cap clip pipe"
+        data-start="3.24"
+        data-duration="1.16"
+        data-track-index="12"
+      >
+        <span>¡AYÚDAME!</span>
+      </div>
+      <div
+        id="cap3"
+        class="cap clip kaizen"
+        data-start="4.4"
+        data-duration="1.37"
+        data-track-index="12"
+      >
+        <span><b>KAIZEN:</b> ¡PIPE, RÁPIDO!</span>
+      </div>
+      <div
+        id="cap4"
+        class="cap clip kaizen"
+        data-start="5.77"
+        data-duration="1.39"
+        data-track-index="12"
+      >
+        <span>¡ME ESTOY QUEDANDO GRIS!</span>
+      </div>
+      <div
+        id="cap5"
+        class="cap clip pipe"
+        data-start="7.52"
+        data-duration="1.2"
+        data-track-index="12"
+      >
+        <span><b>PIPE:</b> INTENTO UNO</span>
+      </div>
+      <div
+        id="cap6"
+        class="cap clip pipe"
+        data-start="8.92"
+        data-duration="1.16"
+        data-track-index="12"
+      >
+        <span>COMO UN PRO</span>
+      </div>
+      <div
+        id="cap7"
+        class="cap clip pipe"
+        data-start="12.24"
+        data-duration="1.28"
+        data-track-index="12"
+      >
+        <span>INTENTO DOS</span>
+      </div>
+      <div
+        id="cap8"
+        class="cap clip pipe"
+        data-start="13.52"
+        data-duration="1.46"
+        data-track-index="12"
+      >
+        <span>CON EXPLOSIVOS</span>
+      </div>
+      <div
+        id="cap9"
+        class="cap clip kaizen"
+        data-start="16.7"
+        data-duration="1.28"
+        data-track-index="12"
+      >
+        <span><b>KAIZEN:</b> ¿EN SERIO?</span>
+      </div>
+      <div
+        id="cap10"
+        class="cap clip pipe"
+        data-start="18.38"
+        data-duration="2.24"
+        data-track-index="12"
+      >
+        <span><b>PIPE:</b> INTENTO TRES</span>
+      </div>
+      <div
+        id="cap11"
+        class="cap clip pipe"
+        data-start="20.8"
+        data-duration="0.9"
+        data-track-index="12"
+      >
+        <span>COMO YO</span>
+      </div>
+      <div
+        id="cap12"
+        class="cap clip kaizen"
+        data-start="22.7"
+        data-duration="1.07"
+        data-track-index="12"
+      >
+        <span><b>KAIZEN:</b> ¡FUNCIONÓ!</span>
+      </div>
+      <div
+        id="cap13"
+        class="cap clip kaizen"
+        data-start="23.77"
+        data-duration="1.64"
+        data-track-index="12"
+      >
+        <span>¿CÓMO HICISTE ESO?</span>
+      </div>
+      <div
+        id="cap14"
+        class="cap clip pipe"
+        data-start="25.44"
+        data-duration="1.5"
+        data-track-index="12"
+      >
+        <span><b>PIPE:</b> JUGAR MAL TAMBIÉN SALVA VIDAS</span>
+      </div>
+      <div
+        id="cap15"
+        class="cap clip pipe"
+        data-start="26.94"
+        data-duration="0.72"
+        data-track-index="12"
+      >
+        <span>DALE LIKE PARA LA</span>
+      </div>
+      <div
+        id="cap16"
+        class="cap clip pipe"
+        data-start="27.66"
+        data-duration="0.94"
+        data-track-index="12"
+      >
+        <span>PARTE DOS</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="30.5" data-track-index="7">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="30.5" data-track-index="8"></div>
+      <div id="impact" class="clip" data-start="0" data-duration="30.5" data-track-index="8"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="30.5"
+        data-track-index="9"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="30.5"
+        data-track-index="10"
+        data-volume="0.5"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="30.5"
+        data-track-index="11"
+        data-volume="0.16"
+        data-fade-out="1.2"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      tl.set(["#flash", "#impact", "#plus"], { opacity: 0 }, 0);
+      const impact = (at) => {
+        tl.to("#impact", { opacity: 1, duration: 0.001 }, at);
+        tl.to("#impact", { opacity: 0, duration: 0.001 }, at + 0.067);
+      };
+      const flash = (at, o = 0.8) => {
+        tl.to("#flash", { opacity: o, duration: 0.04 }, at);
+        tl.to("#flash", { opacity: 0, duration: 0.3 }, at + 0.04);
+      };
+      const slam = (sel, at, rot = 0) =>
+        tl.fromTo(
+          sel,
+          { scale: 3, opacity: 0, rotation: rot * 2 },
+          { scale: 1, opacity: 1, rotation: rot, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+      const pop = (sel, at) =>
+        tl.fromTo(
+          sel,
+          { scale: 0.2, opacity: 0, y: 30 },
+          { scale: 1, opacity: 1, y: 0, duration: 0.24, ease: "back.out(3)" },
+          at,
+        );
+
+      // The banner and the count are on screen at frame 0; the banner pulses on "like".
+      tl.fromTo(
+        "#card-help",
+        { scale: 1 },
+        { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1 },
+        2.2,
+      );
+      tl.fromTo(
+        "#n3",
+        { scale: 1 },
+        { scale: 1.15, duration: 0.3, yoyo: true, repeat: 5, ease: "sine.inOut" },
+        0.4,
+      );
+      // Each count change: a like lands, a heart fills, the number slams in.
+      [
+        ["#h1", "#n2", 11.8],
+        ["#h2", "#n1", 17.8],
+        ["#h3", null, 21.6],
+      ].forEach(([h, n, at]) => {
+        tl.fromTo(
+          "#plus",
+          { opacity: 0, y: 40, scale: 0.6 },
+          { opacity: 1, y: -30, scale: 1.1, duration: 0.25, ease: "back.out(3)" },
+          at,
+        );
+        tl.to("#plus", { opacity: 0, y: -90, duration: 0.3 }, at + 0.5);
+        tl.set(h, { attr: { class: "heart-on" } }, at);
+        tl.fromTo(
+          h,
+          { scale: 1.8, transformOrigin: "50% 50%" },
+          { scale: 1, duration: 0.25, ease: "back.out(3)" },
+          at,
+        );
+        if (n) slam(n, at, -6);
+      });
+      // Attempt labels and verdicts.
+      pop("#t1", 7.5);
+      pop("#t2", 12.2);
+      pop("#t3", 18.38);
+      slam("#x1", 11.0, -8);
+      slam("#x2", 16.5, 8);
+      slam("#ok", 21.8, -4);
+      slam("#saved", 21.8, -3);
+      impact(11.0);
+      impact(21.6);
+      flash(21.6, 0.9);
+      tl.fromTo(
+        "#banner2 .card",
+        { scale: 0.3, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.26, ease: "back.out(3)" },
+        25.2,
+      );
+      tl.to("#card-help", { opacity: 0, duration: 0.1 }, 25.2);
+      tl.fromTo(
+        "#banner2 .card",
+        { scale: 1 },
+        { scale: 1.1, duration: 0.18, yoyo: true, repeat: 5 },
+        27.16,
+      );
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.75, y: 14 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as V from "./lib/village.js";
+      const { THREE, scene, camera, renderer, sun, lerp, smooth, easeOutBack, prog, mulberry32 } =
+        V;
+      const {
+        pipe,
+        kaizen,
+        pros,
+        evaluator,
+        boardStones,
+        floatStones,
+        crystal,
+        crystalMat,
+        crystalLight,
+        lanternLights,
+        heldTorches,
+        hutLight,
+      } = V;
+
+      pros.forEach((p) => (p.group.visible = false));
+      heldTorches.forEach((h) => (h.visible = false));
+      Object.values(floatStones).forEach((s) => (s.visible = false));
+      hutLight.intensity = 0;
+      let hemi = null;
+      scene.traverse((o) => o.isHemisphereLight && (hemi = o));
+      const skyRed = document.getElementById("sky-red");
+
+      // Kaizen's materials, to drain and restore his colour.
+      const kMats = [];
+      kaizen.group.traverse(
+        (m) => m.isMesh && [].concat(m.material).forEach((x) => kMats.includes(x) || kMats.push(x)),
+      );
+
+      // ---------- props ----------
+      const CAGE = new THREE.Vector3(2.6, 0, 1.0);
+      const barMat = V.M(V.stone, { color: "#8c8c99" });
+      const bars = [];
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.09, 2.3, 0.09), barMat);
+        b.position.set(CAGE.x + Math.cos(a) * 0.62, 1.15, CAGE.z + Math.sin(a) * 0.62);
+        b.castShadow = true;
+        scene.add(b);
+        bars.push({ m: b, base: b.position.clone(), r: mulberry32(400 + i) });
+      }
+      const lid = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.25, 1.5), barMat);
+      lid.position.set(CAGE.x, 2.4, CAGE.z);
+      lid.castShadow = true;
+      scene.add(lid);
+      bars.push({ m: lid, base: lid.position.clone(), r: mulberry32(420) });
+      const floorPlate = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.12, 1.5), barMat);
+      floorPlate.position.set(CAGE.x, 0.06, CAGE.z);
+      scene.add(floorPlate);
+      bars.push({ m: floorPlate, base: floorPlate.position.clone(), r: mulberry32(421) });
+      // Gray beam from the crystal into the cage.
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: "#c8c8d0",
+        transparent: true,
+        opacity: 0.7,
+      });
+      const from = new THREE.Vector3(0, 1.95, 0),
+        to = new THREE.Vector3(CAGE.x, 2.4, CAGE.z);
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, from.distanceTo(to)), beamMat);
+      beam.position.copy(from).lerp(to, 0.5);
+      beam.lookAt(to);
+      scene.add(beam);
+
+      // Sword, carried in Pipe's right hand.
+      const sword = new THREE.Group();
+      const blade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.8, 0.14),
+        new THREE.MeshLambertMaterial({ color: "#d9dde6" }),
+      );
+      blade.position.y = -1.12;
+      const guard = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.08, 0.36),
+        new THREE.MeshLambertMaterial({ color: "#6b4a26" }),
+      );
+      guard.position.y = -0.7;
+      sword.add(blade, guard);
+      pipe.armR.add(sword);
+      // A generic explosive charge with a fuse.
+      const charge = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(0.6, 0.6, 0.6),
+        new THREE.MeshLambertMaterial({ color: "#c8321f" }),
+      );
+      body.position.y = 0.3;
+      const band = new THREE.Mesh(
+        new THREE.BoxGeometry(0.62, 0.14, 0.62),
+        new THREE.MeshLambertMaterial({ color: "#2a2a2a" }),
+      );
+      band.position.y = 0.3;
+      const fuse = new THREE.Mesh(
+        new THREE.BoxGeometry(0.05, 0.3, 0.05),
+        new THREE.MeshLambertMaterial({ color: "#3a3a3a" }),
+      );
+      fuse.position.y = 0.75;
+      charge.add(body, band, fuse);
+      charge.traverse((m) => m.isMesh && (m.castShadow = true));
+      scene.add(charge);
+      // The potato Pipe trips on.
+      const potato = new THREE.Mesh(
+        new THREE.BoxGeometry(0.28, 0.2, 0.36),
+        new THREE.MeshLambertMaterial({ color: "#c49a54" }),
+      );
+      potato.position.set(-0.3, 0.1, 2.95);
+      potato.castShadow = true;
+      scene.add(potato);
+
+      const shardMat = new THREE.MeshBasicMaterial({ color: "#c8f4ff" });
+      const smokeMat = new THREE.MeshLambertMaterial({ color: "#77777f" });
+      const add = (...a) => V.bursts.push(V.burst(...a));
+      add(700, [CAGE.x - 0.3, 1.6, CAGE.z - 0.3], 10.35, V.sparkMat, 14, 1.8); // sword clang sparks
+      add(701, [1.7, 0.85, 1.9], 14.8, V.sparkMat, 6, 0.8);
+      add(702, [1.7, 0.85, 1.9], 15.4, V.sparkMat, 6, 0.8);
+      add(703, [1.7, 0.85, 1.9], 16.0, V.sparkMat, 6, 0.8);
+      add(704, [1.7, 0.6, 1.7], 16.4, smokeMat, 10, 0.6); // the fizzle
+      add(705, [0, 1.95, -0.2], 21.45, shardMat, 22, 2.6); // crystal shatters
+      add(706, [CAGE.x, 0.4, CAGE.z - 0.3], 21.6, V.dustMat, 26, 2.8);
+      add(707, [0.1, 0.1, 1.9], 21.4, V.dustMat, 12, 1.4);
+
+      // ---------- mood ----------
+      const DAWN = {
+        sun: new THREE.Color("#ffb07a"),
+        si: 2.0,
+        hemi: new THREE.Color("#f0c0b0"),
+        hi: 0.7,
+        fog: new THREE.Color("#e0a890"),
+      };
+      const RED = {
+        sun: new THREE.Color("#ff4a2a"),
+        si: 1.2,
+        hemi: new THREE.Color("#ff6a50"),
+        hi: 0.35,
+        fog: new THREE.Color("#3a0806"),
+      };
+      function mood(t) {
+        const k = smooth(prog(t, 26.3, 27.0));
+        sun.color.copy(DAWN.sun).lerp(RED.sun, k);
+        sun.intensity = lerp(DAWN.si, RED.si, k);
+        if (hemi) {
+          hemi.color.copy(DAWN.hemi).lerp(RED.hemi, k);
+          hemi.intensity = lerp(DAWN.hi, RED.hi, k);
+        }
+        scene.fog.color.copy(DAWN.fog).lerp(RED.fog, k);
+        scene.fog.near = lerp(14, 8, k);
+        scene.fog.far = lerp(55, 42, k);
+        skyRed.style.opacity = k;
+        lanternLights.forEach((l) => (l.intensity = lerp(0.6, 3.5, k)));
+        V.clouds.forEach((c) => (c.visible = false));
+        boardStones.forEach(
+          (s, i) => (s.userData.lit.emissiveIntensity = 0.25 + 0.1 * Math.sin(t * 3 + i)),
+        );
+      }
+
+      // ---------- shots ----------
+      const shots = [
+        [0, 4.3, [3.1, 1.85, 5.6], [2.6, 1.4, 1.0], [2.95, 1.75, 4.9], [2.6, 1.4, 1.0], 44, 40],
+        [4.3, 7.2, [1.3, 2.4, 9.0], [1.0, 1.1, 1.0], [1.2, 2.2, 8.2], [1.0, 1.1, 1.0], 50, 48],
+        [7.2, 11.8, [-0.8, 1.8, 6.2], [1.6, 1.0, 1.6], [-0.6, 1.7, 5.6], [1.6, 1.0, 1.6], 50, 48],
+        [11.8, 17.8, [0.6, 1.6, 6.6], [1.2, 0.8, 2.0], [0.7, 1.5, 6.0], [1.4, 0.7, 2.0], 50, 46],
+        [17.8, 22.5, [1.2, 2.3, 8.2], [0.6, 1.0, 1.4], [1.1, 2.2, 7.6], [0.8, 1.0, 1.4], 52, 50],
+        [22.5, 25.2, [0.4, 1.3, 3.4], [2.6, 1.5, 1.0], [0.5, 1.3, 3.2], [2.6, 1.5, 1.0], 46, 42],
+        [25.2, 30.5, [1.0, 1.9, 7.6], [0.8, 1.5, -1.0], [0.9, 1.8, 6.8], [0.8, 1.5, -1.0], 54, 50],
+      ];
+      const kicks = [10.35, 11.0, 16.4, 21.45, 21.6];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      function cam(t) {
+        const s = shots.find((x) => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+        const k = smooth(prog(t, s[0], s[1]));
+        const pos = v3(s[2]).lerp(v3(s[4]), k),
+          look = v3(s[3]).lerp(v3(s[5]), k);
+        let kick = 0;
+        for (const q of kicks) if (t >= q && t < q + 0.3) kick = Math.max(kick, 1 - (t - q) / 0.3);
+        pos.x += Math.sin(t * 90) * 0.05 * kick;
+        pos.y += Math.cos(t * 77) * 0.05 * kick;
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = lerp(s[6], s[7], k) - 8 * kick * kick;
+        camera.updateProjectionMatrix();
+      }
+
+      // ---------- actors ----------
+      function walk(c, t, speed = 11, amp = 0.6) {
+        const s = Math.sin(t * speed) * amp;
+        c.legL.rotation.x = s;
+        c.legR.rotation.x = -s;
+        c.armL.rotation.x = -s * 0.8;
+        c.armR.rotation.x = s * 0.8;
+        c.group.position.y = Math.abs(Math.sin(t * speed)) * 0.04;
+      }
+      const at = (c, x, z, rot) => {
+        c.group.position.set(x, 0, z);
+        c.group.rotation.y = rot;
+      };
+      const toward = (fx, fz, tx, tz) => Math.atan2(tx - fx, tz - fz);
+      function path(keys, t) {
+        if (t <= keys[0][0]) return { x: keys[0][1], z: keys[0][2], moving: false, face: null };
+        for (let i = 0; i < keys.length - 1; i++) {
+          const [ta, xa, za] = keys[i],
+            [tb, xb, zb] = keys[i + 1];
+          if (t < tb) {
+            const k = prog(t, ta, tb);
+            const moving = xa !== xb || za !== zb;
+            return {
+              x: lerp(xa, xb, k),
+              z: lerp(za, zb, k),
+              moving,
+              face: moving ? Math.atan2(xb - xa, zb - za) : null,
+            };
+          }
+        }
+        const l = keys[keys.length - 1];
+        return { x: l[1], z: l[2], moving: false, face: null };
+      }
+
+      function actors(t) {
+        pipe.reset();
+        kaizen.reset();
+        evaluator.visible = false;
+        sword.visible = t >= 7.2 && t < 11.8;
+        const P = pipe,
+          K = kaizen;
+
+        // Kaizen in the cage, draining to gray; freed on the third try.
+        const freed = smooth(prog(t, 21.65, 22.3));
+        const drain = Math.min(1, 0.35 + t * 0.03) * (1 - freed);
+        kMats.forEach((m) => m.color.setScalar(1 - 0.6 * drain));
+        at(K, CAGE.x, CAGE.z, toward(CAGE.x, CAGE.z, 0.6, 4));
+        K.setFace(t < 21.65 ? (t >= 16.7 && t < 17.8 ? "smug" : "shock") : "happy");
+        if (t < 21.65) {
+          // Hands on the bars, pleading.
+          K.armL.rotation.x = K.armR.rotation.x = -1.4 + Math.sin(t * 6) * 0.1;
+          K.armL.rotation.z = 0.2;
+          K.armR.rotation.z = -0.2;
+          if (t >= 16.7 && t < 17.8) {
+            K.armL.rotation.x = K.armR.rotation.x = 0;
+            K.head.rotation.z = 0.25; // deadpan "¿En serio?"
+          }
+        } else if (t < 25.2) {
+          K.group.position.y = Math.max(0, Math.sin((t - 21.7) * 7)) * 0.3 * (t < 23.5 ? 1 : 0);
+          K.armL.rotation.z = -2.6;
+          K.armR.rotation.z = 2.6;
+          K.group.rotation.y = toward(CAGE.x, CAGE.z, 0.1, 1.9);
+        } else {
+          at(K, 1.9, 1.9, toward(1.9, 1.9, 0.9, 6));
+          K.setFace("smug");
+          K.armR.rotation.z = 2.4 + Math.sin(t * 8) * 0.3; // waving
+        }
+
+        // Pipe.
+        if (t < 7.2) {
+          at(P, 0.6, 3.4, toward(0.6, 3.4, 1.0, 9));
+          P.setFace("shock");
+          P.armL.rotation.z = -0.6;
+          P.armR.rotation.z = 0.6 + Math.sin(t * 10) * 0.2; // "help me!" to camera
+          P.group.position.y = Math.abs(Math.sin(t * 5)) * 0.08;
+        } else if (t < 11.8) {
+          // Attempt 1: the pro swing bounces him onto his back.
+          const p = path(
+            [
+              [7.4, -0.4, 3.6],
+              [9.2, 1.75, 1.85],
+            ],
+            t,
+          );
+          at(P, p.x, p.z, p.face ?? toward(1.75, 1.85, CAGE.x, CAGE.z));
+          P.setFace("smirk");
+          if (p.moving) walk(P, t, 11, 0.6);
+          if (t >= 9.6 && t < 10.35)
+            P.armR.rotation.x = lerp(-2.9, -0.5, smooth(prog(t, 9.9, 10.35)));
+          if (t >= 10.35) {
+            const k = smooth(prog(t, 10.35, 10.9));
+            const back = toward(CAGE.x, CAGE.z, 1.75, 1.85);
+            P.group.position.x = 1.75 + Math.sin(back) * 1.4 * k;
+            P.group.position.z = 1.85 + Math.cos(back) * 1.4 * k;
+            P.group.position.y = Math.sin(k * Math.PI) * 0.6;
+            P.group.rotation.x = -1.45 * k;
+            P.setFace("shock");
+            P.armL.rotation.z = -1.2 * k;
+            P.armR.rotation.z = 1.2 * k;
+          }
+        } else if (t < 17.8) {
+          // Attempt 2: place the charge, run, cover ears... fizzle.
+          const p = path(
+            [
+              [12.0, 0.2, 3.6],
+              [13.6, 1.5, 2.6],
+              [14.4, 1.5, 2.6],
+              [15.0, -0.4, 4.0],
+            ],
+            t,
+          );
+          at(
+            P,
+            p.x,
+            p.z,
+            p.face ?? (t < 14.4 ? toward(1.5, 2.6, 1.7, 1.9) : toward(-0.4, 4.0, 1.7, 1.9)),
+          );
+          if (p.moving) walk(P, t, t > 14.4 ? 18 : 11, t > 14.4 ? 0.9 : 0.6);
+          if (t >= 13.6 && t < 14.4) P.armR.rotation.x = -1.0;
+          if (t >= 15.0) {
+            P.armL.rotation.x = P.armR.rotation.x = -2.6; // hands over ears
+            P.armL.rotation.z = 0.6;
+            P.armR.rotation.z = -0.6;
+            P.group.position.y = -0.1;
+            P.setFace(t >= 16.4 ? "happy" : "shock");
+          }
+          if (t >= 16.6) {
+            P.armL.rotation.x = P.armR.rotation.x = 0;
+            P.armR.rotation.z = 0.4;
+            P.group.position.y = 0;
+          }
+        } else if (t < 25.2) {
+          // Attempt 3: walk, trip on the potato, faceplant into the altar.
+          const p = path(
+            [
+              [19.4, -1.6, 4.4],
+              [20.9, -0.35, 3.05],
+            ],
+            t,
+          );
+          const face = toward(-1.6, 4.4, 0.1, 1.7);
+          at(P, p.x, p.z, face);
+          P.setFace("happy");
+          if (p.moving) walk(P, t, 10, 0.5);
+          if (t >= 20.9) {
+            const k = prog(t, 20.9, 21.4);
+            P.group.position.x = lerp(-0.35, 0.05, k);
+            P.group.position.z = lerp(3.05, 1.85, k);
+            P.group.position.y = Math.sin(k * Math.PI) * 0.35 + (k >= 1 ? 0.5 : 0);
+            P.group.rotation.x = 1.45 * smooth(k);
+            P.armL.rotation.x = P.armR.rotation.x = -2.6 * k;
+            P.setFace("shock");
+          }
+          if (t >= 22.5) P.setFace("happy");
+        } else {
+          // Stands up, proud, waves; the silhouette appears behind.
+          const up = smooth(prog(t, 25.2, 25.7));
+          at(P, lerp(0.05, 0.4, up), lerp(1.85, 2.3, up), toward(0.4, 2.3, 0.9, 7));
+          P.group.rotation.x = 1.45 * (1 - up);
+          P.group.position.y = 0.5 * (1 - up);
+          P.setFace(t >= 26.6 ? "smirk" : "happy");
+          if (up >= 1) P.armR.rotation.z = 2.4 + Math.sin(t * 8) * 0.3;
+        }
+        if (t >= 26.5) {
+          evaluator.visible = true;
+          evaluator.position.set(-1.6, 0, -8.5);
+          evaluator.rotation.y = 0.15;
+        }
+      }
+
+      function props(t) {
+        // Cage: intact until the crystal shatters, then flies apart.
+        const boom = prog(t, 21.6, 22.6);
+        bars.forEach(({ m, base, r }, i) => {
+          m.visible = boom < 1;
+          if (boom <= 0) {
+            m.position.copy(base);
+            m.rotation.set(0, 0, 0);
+            return;
+          }
+          const ang = (i / bars.length) * Math.PI * 2 + 0.3;
+          m.position.set(
+            base.x + Math.cos(ang) * 4 * boom,
+            base.y + Math.sin(boom * Math.PI) * 2.2,
+            base.z + Math.sin(ang) * 4 * boom,
+          );
+          m.rotation.set(boom * 6, boom * 4, boom * 2);
+        });
+        // Clang: the cage shudders after the sword hit.
+        if (t >= 10.35 && t < 10.8)
+          bars.forEach(({ m, base }) => (m.position.x = base.x + Math.sin(t * 90) * 0.03));
+        // Crystal and its drain beam.
+        const shattered = t >= 21.45;
+        crystal.visible = !shattered;
+        crystalLight.intensity = shattered ? 0 : 2;
+        crystalMat.color.set("#d0d0dc");
+        crystal.rotation.y = t * 1.2;
+        crystal.position.y = 1.95 + Math.sin(t * 2) * 0.05 + (t >= 21.3 && !shattered ? 0.3 : 0);
+        beam.visible = !shattered;
+        beamMat.opacity = 0.5 + 0.25 * Math.sin(t * 12);
+        // The charge: dropped at 14.4, fuse sparks, fizzles at 16.4.
+        charge.visible = t >= 13.9 && t < 17.8;
+        charge.position.set(1.7, 0, 1.9);
+        const drop = prog(t, 13.9, 14.4);
+        charge.position.y = (1 - drop * drop) * 1.2;
+        charge.scale.setScalar(t >= 16.4 ? 1 - 0.15 * Math.sin(prog(t, 16.4, 16.7) * Math.PI) : 1);
+        potato.visible = t < 21.0 || t >= 22.0;
+        potato.rotation.y = t >= 20.9 ? (t - 20.9) * 8 : 0;
+        V.clouds.forEach((c, i) => (c.position.x = V.cloudX[i] + t * 0.25));
+      }
+
+      function renderAt(t) {
+        mood(t);
+        props(t);
+        actors(t);
+        cam(t);
+        V.renderBursts(t);
+        renderer.render(scene, camera);
+      }
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
