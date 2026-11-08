@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #ffffff;
+        --brayan: #ffd23f;
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #05060a;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--font-display);
+        background: #05060a;
+      }
+      #sky {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          #3a2f6a 0%,
+          #b4587a 30%,
+          #ff8a4a 52%,
+          #ffc46a 68%,
+          #ffe2a0 100%
+        );
+      }
+      #sun {
+        position: absolute;
+        left: 610px;
+        top: 760px;
+        width: 260px;
+        height: 260px;
+        background: #ffd36b;
+        box-shadow: 0 0 120px 40px rgba(255, 170, 70, 0.6);
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 52%,
+          rgba(0, 0, 0, 0.55) 100%
+        );
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      #pov {
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        top: 200px;
+        text-align: center;
+      }
+      #pov span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 64px;
+        line-height: 1.1;
+        -webkit-text-stroke: 16px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 8px 0 var(--stroke);
+      }
+      .timecard {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 560px;
+        display: flex;
+        justify-content: center;
+      }
+      .timecard span {
+        display: block;
+        padding: 22px 40px 14px;
+        background: #ffd23f;
+        color: var(--stroke);
+        font-size: 84px;
+        line-height: 1;
+        border: 10px solid var(--stroke);
+        box-shadow: 0 14px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1130px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 66px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      .cap.brayan span {
+        color: var(--brayan);
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1300px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="31.8"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="skyhost" class="clip" data-start="0" data-duration="31.8" data-track-index="0">
+        <div id="sky"><div id="sun"></div></div>
+      </div>
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="31.8"
+        data-track-index="1"
+      ></canvas>
+      <div
+        id="vignette"
+        class="clip"
+        data-start="0"
+        data-duration="31.8"
+        data-track-index="2"
+      ></div>
+
+      <div id="pov" class="clip" data-start="0" data-duration="31.8" data-track-index="3">
+        <span>POV: tu amigo dice que solo va a minar 5 minutos</span>
+      </div>
+      <div id="tc1" class="timecard clip" data-start="4.4" data-duration="1.3" data-track-index="4">
+        <span>5 MINUTOS DESPUÉS</span>
+      </div>
+      <div id="tc2" class="timecard clip" data-start="8.4" data-duration="1.3" data-track-index="4">
+        <span>1 HORA DESPUÉS</span>
+      </div>
+      <div
+        id="tc3"
+        class="timecard clip"
+        data-start="12.4"
+        data-duration="1.1"
+        data-track-index="4"
+      >
+        <span>ESA NOCHE</span>
+      </div>
+      <div
+        id="tc4"
+        class="timecard clip"
+        data-start="15.2"
+        data-duration="1.3"
+        data-track-index="4"
+      >
+        <span>3 DÍAS DESPUÉS</span>
+      </div>
+
+      <div
+        id="cap0"
+        class="cap clip brayan"
+        data-start="0.4"
+        data-duration="1.3"
+        data-track-index="5"
+      >
+        <span>¡AHORITA VENGO!</span>
+      </div>
+      <div
+        id="cap1"
+        class="cap clip brayan"
+        data-start="1.7"
+        data-duration="0.78"
+        data-track-index="5"
+      >
+        <span>SOLO VOY A MINAR</span>
+      </div>
+      <div
+        id="cap2"
+        class="cap clip brayan"
+        data-start="2.48"
+        data-duration="1.36"
+        data-track-index="5"
+      >
+        <span>CINCO MINUTOS</span>
+      </div>
+      <div id="cap3" class="cap clip" data-start="5.18" data-duration="0.94" data-track-index="5">
+        <span>¿BRAYAN?</span>
+      </div>
+      <div
+        id="cap4"
+        class="cap clip brayan"
+        data-start="6.2"
+        data-duration="1.05"
+        data-track-index="5"
+      >
+        <span>¡YA CASI!</span>
+      </div>
+      <div
+        id="cap5"
+        class="cap clip brayan"
+        data-start="7.25"
+        data-duration="1.53"
+        data-track-index="5"
+      >
+        <span>¡ENCONTRÉ HIERRO!</span>
+      </div>
+      <div id="cap6" class="cap clip" data-start="9.2" data-duration="0.56" data-track-index="5">
+        <span>ESTO YA NO ES</span>
+      </div>
+      <div id="cap7" class="cap clip" data-start="9.76" data-duration="0.64" data-track-index="5">
+        <span>UN HOYO</span>
+      </div>
+      <div id="cap8" class="cap clip" data-start="10.4" data-duration="1.38" data-track-index="5">
+        <span>ESTO ES UN METRO</span>
+      </div>
+      <div
+        id="cap9"
+        class="cap clip brayan"
+        data-start="13.5"
+        data-duration="1.17"
+        data-track-index="5"
+      >
+        <span>ME MUDÉ</span>
+      </div>
+      <div
+        id="cap10"
+        class="cap clip brayan"
+        data-start="16.21"
+        data-duration="0.9"
+        data-track-index="5"
+      >
+        <span>SHHH</span>
+      </div>
+      <div
+        id="cap11"
+        class="cap clip brayan"
+        data-start="17.11"
+        data-duration="2.22"
+        data-track-index="5"
+      >
+        <span>SE LLAMA PELUSA</span>
+      </div>
+      <div id="cap12" class="cap clip" data-start="19.38" data-duration="0.98" data-track-index="5">
+        <span>BRAYAN</span>
+      </div>
+      <div id="cap13" class="cap clip" data-start="20.52" data-duration="0.68" data-track-index="5">
+        <span>TU MAMÁ TE ESTÁ</span>
+      </div>
+      <div id="cap14" class="cap clip" data-start="21.2" data-duration="1.08" data-track-index="5">
+        <span>BUSCANDO</span>
+      </div>
+      <div
+        id="cap15"
+        class="cap clip brayan"
+        data-start="23.9"
+        data-duration="1.97"
+        data-track-index="5"
+      >
+        <span>¡MIS DIAMANTEEEES!</span>
+      </div>
+      <div
+        id="cap16"
+        class="cap clip brayan"
+        data-start="28.88"
+        data-duration="0.75"
+        data-track-index="5"
+      >
+        <span>BUENO</span>
+      </div>
+      <div
+        id="cap17"
+        class="cap clip brayan"
+        data-start="29.63"
+        data-duration="1.84"
+        data-track-index="5"
+      >
+        <span>¿CINCO MINUTITOS MÁS?</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="31.8" data-track-index="6">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="31.8" data-track-index="7"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="31.8"
+        data-track-index="8"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="31.8"
+        data-track-index="9"
+        data-volume="0.5"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="31.8"
+        data-track-index="10"
+        data-volume="0.15"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+      const tl = gsap.timeline({ paused: true });
+      tl.set("#flash", { opacity: 0 }, 0);
+      // Time cards slam in with a thud, then lift away.
+      ["#tc1", "#tc2", "#tc3", "#tc4"].forEach((s) => {
+        const at = parseFloat(document.querySelector(s).dataset.start);
+        const dur = parseFloat(document.querySelector(s).dataset.duration);
+        tl.fromTo(
+          s + " span",
+          { scale: 2.6, opacity: 0, rotation: -6 },
+          { scale: 1, opacity: 1, rotation: -2, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+        tl.fromTo(
+          s + " span",
+          { x: 0 },
+          { x: 10, duration: 0.04, yoyo: true, repeat: 3, ease: "none" },
+          at + 0.14,
+        );
+        tl.to(
+          s + " span",
+          { y: -40, opacity: 0, duration: 0.18, ease: "power2.in" },
+          at + dur - 0.2,
+        );
+      });
+      tl.to("#flash", { opacity: 0.7, duration: 0.04 }, 22.9);
+      tl.to("#flash", { opacity: 0, duration: 0.3 }, 22.94);
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.75, y: 14 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as V from "./lib/village.js";
+      const {
+        THREE,
+        scene,
+        camera,
+        renderer,
+        sun,
+        lerp,
+        smooth,
+        easeOutBack,
+        prog,
+        mulberry32,
+        M,
+        pixelTex,
+        pal,
+      } = V;
+      const {
+        pipe,
+        kaizen,
+        pros,
+        evaluator,
+        heldTorches,
+        floatStones,
+        hutLight,
+        lanternLights,
+        crystalLight,
+      } = V;
+
+      // This short uses only Brayan, Pelusa and Pipe's POV hands.
+      [pipe, kaizen, ...pros].forEach((c) => (c.group.visible = false));
+      evaluator.visible = false;
+      heldTorches.forEach((h) => (h.visible = false));
+      Object.values(floatStones).forEach((s) => (s.visible = false));
+      let hemi = null;
+      scene.traverse((o) => o.isHemisphereLight && (hemi = o));
+      scene.add(camera);
+      const sky = document.getElementById("skyhost");
+
+      const box = new THREE.BoxGeometry(1, 1, 1);
+      const mesh = (geo, mat, x, y, z, parent = scene) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(x, y, z);
+        m.castShadow = m.receiveShadow = true;
+        parent.add(m);
+        return m;
+      };
+      const flat = (c, extra = {}) => new THREE.MeshLambertMaterial({ color: c, ...extra });
+      const glow = (c) => new THREE.MeshBasicMaterial({ color: c });
+      const repeatTex = (t, rx, ry) => {
+        const c = t.clone();
+        c.repeat.set(rx, ry);
+        c.wrapS = c.wrapT = THREE.RepeatWrapping;
+        c.needsUpdate = true;
+        return c;
+      };
+      // Cubes batched per material for the cave sets.
+      const batches = new Map();
+      const cube = (mat, x, y, z) => {
+        if (!batches.has(mat)) batches.set(mat, []);
+        batches.get(mat).push(new THREE.Matrix4().makeTranslation(x, y, z));
+      };
+      const caveStone = M(
+        pixelTex(16, 16, 900, (x, y, r) => pal(["#3a3d48", "#454956", "#505463", "#2f323b"], r())),
+      );
+      const deepStone = M(
+        pixelTex(16, 16, 901, (x, y, r) =>
+          r() < 0.05 ? "#5fe6d8" : pal(["#20232c", "#272a35", "#1b1d25"], r()),
+        ),
+      );
+      const plank = M(V.planks);
+
+      // ---------- Brayan (original design from the script) ----------
+      const BR = {
+        skin: "#d9a07a",
+        skinD: "#c08a66",
+        shirt: "#8fe03a",
+        shirtD: "#6cbf22",
+        cap: "#d63a32",
+        capD: "#a82a24",
+        pants: "#3a4a6a",
+      };
+      function brayanFace(mood) {
+        return pixelTex(8, 8, 950 + mood.length, (x, y) => {
+          if (y === 0) return BR.cap;
+          if (y === 1) return x < 6 ? BR.capD : BR.cap; // backwards brim shadow
+          if (y === 2) {
+            if (mood === "wink" && x >= 5 && x <= 6) return "#3a2214";
+            return x === 1 || x === 2 || x === 5 || x === 6 ? "#3a2214" : BR.skin; // one-block brows
+          }
+          if (y === 3 || y === 4) {
+            const eye = x === 1 || x === 2 || x === 5 || x === 6;
+            if (!eye) return BR.skin;
+            if (mood === "wink" && x >= 5) return y === 4 ? "#3a2214" : BR.skin;
+            if (mood === "sleepy") return y === 4 ? "#3a2214" : BR.skin;
+            if (mood === "scared")
+              return y === 3 ? "#ffffff" : x === 2 || x === 5 ? "#111" : "#ffffff";
+            return (x === 2 || x === 6) && y === 4 ? "#111" : "#ffffff";
+          }
+          if (y === 5) return BR.skin;
+          if (y === 6) {
+            if (mood === "scared") return x >= 2 && x <= 5 ? "#3a1010" : BR.skin;
+            if (mood === "eat") return x >= 3 && x <= 4 ? "#c49a54" : BR.skin;
+            return x >= 1 && x <= 6 ? (x === 1 || x === 6 ? "#7a2a1a" : "#ffffff") : BR.skin; // big grin
+          }
+          return mood === "scared" && x >= 2 && x <= 5 ? "#3a1010" : BR.skinD;
+        });
+      }
+      const brayanSkin = {
+        faces: {
+          happy: brayanFace("happy"),
+          wink: brayanFace("wink"),
+          scared: brayanFace("scared"),
+          eat: brayanFace("eat"),
+          sleepy: brayanFace("sleepy"),
+        },
+        headSide: pixelTex(8, 8, 960, (x, y) => (y < 2 ? BR.cap : BR.skin)),
+        headBack: pixelTex(8, 8, 961, (x, y) =>
+          y < 2 ? BR.cap : y < 4 && x > 1 && x < 6 ? BR.capD : "#3a2214",
+        ),
+        headTop: pixelTex(8, 8, 962, (x, y) => (y > 5 && x > 1 && x < 6 ? BR.capD : BR.cap)),
+        torsoFront: pixelTex(8, 12, 963, (x, y) =>
+          y > 9 ? BR.pants : x === 0 || x === 7 ? BR.shirtD : BR.shirt,
+        ),
+        torsoBack: pixelTex(8, 12, 964, (x, y) => (y > 9 ? BR.pants : BR.shirt)),
+        torsoSide: pixelTex(4, 12, 965, (x, y) => (y > 9 ? BR.pants : BR.shirtD)),
+        arm: pixelTex(4, 12, 966, (x, y) => (y < 4 ? BR.shirt : x === 3 ? BR.skinD : BR.skin)),
+        leg: pixelTex(4, 12, 967, (x, y) => (y > 10 ? "#2a2a2a" : x === 3 ? "#2c3a55" : BR.pants)),
+        flat: BR.shirt,
+      };
+      const brayan = V.makeChar(brayanSkin);
+      brayan.group.rotation.order = "YXZ";
+      // Iron pickaxe in the right hand.
+      const pick = new THREE.Group();
+      mesh(new THREE.BoxGeometry(0.07, 0.9, 0.07), flat("#6b4a26"), 0, -1.0, 0, pick);
+      mesh(new THREE.BoxGeometry(0.09, 0.1, 0.6), flat("#d9dde6"), 0, -1.42, 0, pick);
+      brayan.armR.add(pick);
+      // The beard that grows over three days.
+      const beard = new THREE.Group();
+      [0, 1, 2, 3, 4].forEach((i) =>
+        mesh(
+          new THREE.BoxGeometry(0.42 - i * 0.04, 0.22, 0.12),
+          flat(i % 2 ? "#5a3a1e" : "#6b4a26"),
+          0,
+          -0.3 - i * 0.2,
+          0.22,
+          beard,
+        ),
+      );
+      brayan.head.add(beard);
+      // Potato for dinner.
+      const potato = mesh(
+        new THREE.BoxGeometry(0.16, 0.12, 0.2),
+        flat("#c49a54"),
+        0,
+        -0.72,
+        0.1,
+        brayan.armL,
+      );
+
+      // ---------- Pelusa: an original fluffy cave beast ----------
+      const pelusa = new THREE.Group();
+      const fur = M(
+        pixelTex(16, 16, 980, (x, y, r) => pal(["#5a4f78", "#665a88", "#71669a", "#4e456a"], r())),
+      );
+      const spot = glow("#4ff0dc");
+      mesh(new THREE.BoxGeometry(3.4, 1.8, 2.6), fur, 0, 0.9, 0, pelusa);
+      mesh(new THREE.BoxGeometry(2.6, 0.5, 2.0), fur, 0, 1.95, 0, pelusa);
+      const head = new THREE.Group();
+      mesh(new THREE.BoxGeometry(1.6, 1.3, 1.4), fur, 0, 0, 0, head);
+      [-0.55, 0.55].forEach((x) =>
+        mesh(new THREE.BoxGeometry(0.42, 0.7, 0.3), fur, x, 0.95, 0, head),
+      ); // big ears
+      const mouth = mesh(
+        new THREE.BoxGeometry(1.1, 0.05, 0.08),
+        flat("#7a1a2a"),
+        0,
+        -0.25,
+        0.72,
+        head,
+      );
+      const teeth = new THREE.Group();
+      [-0.4, -0.2, 0, 0.2, 0.4].forEach((x) =>
+        mesh(new THREE.BoxGeometry(0.1, 0.16, 0.06), flat("#f4f0e0"), x, -0.08, 0.74, teeth),
+      );
+      head.add(teeth);
+      head.position.set(-1.9, 0.75, 0.5);
+      pelusa.add(head);
+      const tail = mesh(new THREE.BoxGeometry(0.5, 0.5, 2.2), fur, 1.7, 0.6, 1.0, pelusa);
+      // Glowing spots on its back (not its chest).
+      [
+        [-0.8, 2.22, -0.4],
+        [0.3, 2.22, 0.5],
+        [0.9, 2.22, -0.5],
+        [-0.2, 2.22, -0.7],
+        [1.3, 1.9, 1.0],
+      ].forEach(([x, y, z]) => mesh(new THREE.BoxGeometry(0.4, 0.06, 0.4), spot, x, y, z, pelusa));
+      const pelusaLight = new THREE.PointLight("#4ff0dc", 3, 14, 1);
+      pelusaLight.position.set(0, 3, 0);
+      pelusa.add(pelusaLight);
+      scene.add(pelusa);
+
+      // ---------- Pipe's POV hands (white hoodie, light blue trim, tan skin) ----------
+      const hands = new THREE.Group();
+      const sleeveMat = M(
+        pixelTex(4, 12, 990, (x, y) =>
+          y === 9 || y === 10 ? "#8fd3ff" : y > 10 ? "#d9a07a" : "#f4f4f6",
+        ),
+      );
+      const handR = new THREE.Group(),
+        handL = new THREE.Group();
+      mesh(new THREE.BoxGeometry(0.16, 0.5, 0.16), sleeveMat, 0, 0, 0, handR);
+      mesh(new THREE.BoxGeometry(0.16, 0.5, 0.16), sleeveMat, 0, 0, 0, handL);
+      const torch = new THREE.Group();
+      mesh(new THREE.BoxGeometry(0.06, 0.34, 0.06), flat("#6b4a26"), 0, 0.3, 0, torch);
+      mesh(new THREE.BoxGeometry(0.09, 0.09, 0.09), glow("#ffcf4a"), 0, 0.5, 0, torch);
+      handR.add(torch);
+      const torchLight = new THREE.PointLight("#ffb24a", 0, 16, 1);
+      torchLight.position.set(0.2, 0.1, -0.4);
+      hands.add(handR, handL, torchLight);
+      camera.add(hands);
+
+      // ---------- SURFACE: Brayan's tiny hole next to Pipe's hut ----------
+      const HOLE = new THREE.Vector3(12, 0, 18.6);
+      const holeMesh = mesh(
+        new THREE.BoxGeometry(0.9, 0.02, 0.9),
+        glow("#0a0806"),
+        HOLE.x,
+        0.012,
+        HOLE.z,
+      );
+      holeMesh.castShadow = false;
+      [
+        [-0.5, 0],
+        [0.5, 0],
+        [0, -0.5],
+        [0, 0.5],
+      ].forEach(([dx, dz]) =>
+        mesh(
+          new THREE.BoxGeometry(dx ? 0.1 : 1.0, 0.04, dz ? 0.1 : 1.0),
+          M(V.planks),
+          HOLE.x + dx,
+          0.02,
+          HOLE.z + dz,
+        ),
+      );
+
+      // ---------- SHAFT (x = 100): looking straight down ----------
+      const SH = new THREE.Vector3(100, 0, 0);
+      const shaftWall = new THREE.Mesh(
+        new THREE.BoxGeometry(1.2, 40, 1.2),
+        new THREE.MeshLambertMaterial({
+          map: repeatTex(
+            pixelTex(16, 16, 902, (x, y, r) =>
+              pal(["#5a5d68", "#646875", "#4c4f59", "#6e7280"], r()),
+            ),
+            1,
+            33,
+          ),
+          side: THREE.BackSide,
+        }),
+      );
+      shaftWall.position.set(SH.x, -20, SH.z);
+      scene.add(shaftWall);
+      for (let y = -1; y > -38; y -= 0.5)
+        mesh(new THREE.BoxGeometry(0.7, 0.05, 0.06), flat("#8a6a3a"), SH.x, y, SH.z - 0.52);
+      [-0.3, 0.3].forEach((x) =>
+        mesh(new THREE.BoxGeometry(0.05, 38, 0.05), flat("#6b4a26"), SH.x + x, -19.5, SH.z - 0.55),
+      );
+      mesh(new THREE.BoxGeometry(0.15, 0.15, 0.15), glow("#ffcf4a"), SH.x + 0.2, -36, SH.z + 0.2);
+      const shaftLight = new THREE.PointLight("#ffb24a", 4, 10, 1);
+      shaftLight.position.set(SH.x, -35, SH.z);
+      scene.add(shaftLight);
+      // Grass rim around the top so the frame edge reads as the surface.
+      [
+        [-1.1, 0],
+        [1.1, 0],
+        [0, -1.1],
+        [0, 1.1],
+      ].forEach(([dx, dz]) =>
+        mesh(
+          new THREE.BoxGeometry(dx ? 1 : 3.2, 0.6, dz ? 1 : 3.2),
+          V.M(V.planks, { color: "#5aae3b" }),
+          SH.x + dx,
+          -0.3,
+          SH.z + dz,
+        ),
+      );
+
+      // ---------- JUNCTION (x = 200): plus-shaped crossroads with torches ----------
+      const JN = new THREE.Vector3(200, 0, 0);
+      const inCorr = (x, z) =>
+        (Math.abs(x) <= 1 && Math.abs(z) <= 9) || (Math.abs(z) <= 1 && Math.abs(x) <= 9);
+      for (let x = -10; x <= 10; x++)
+        for (let z = -10; z <= 10; z++) {
+          if (inCorr(x, z)) continue;
+          const near = inCorr(x + 1, z) || inCorr(x - 1, z) || inCorr(x, z + 1) || inCorr(x, z - 1);
+          if (!near) continue;
+          for (let y = 0; y < 3; y++) cube(caveStone, JN.x + x, y + 0.5, JN.z + z);
+        }
+      mesh(new THREE.BoxGeometry(22, 1, 22), caveStone, JN.x, -0.5, JN.z);
+      mesh(new THREE.BoxGeometry(22, 1, 22), caveStone, JN.x, 3.5, JN.z);
+      const torchSpots = [
+        [-2, 1.6, -1.5],
+        [2, 1.6, 1.5],
+        [-1.5, 1.6, -4],
+        [1.5, 1.6, -6],
+        [-4, 1.6, 1.5],
+        [5, 1.6, -1.5],
+      ];
+      torchSpots.forEach(([x, y, z]) =>
+        mesh(
+          new THREE.BoxGeometry(0.14, 0.14, 0.14),
+          glow("#ffcf4a"),
+          JN.x + x * 0.98,
+          y,
+          JN.z + z,
+        ),
+      );
+      const jLights = [
+        [-1.0, 2.2, -0.6],
+        [1.6, 2, -5.5],
+        [-4, 2, 1.2],
+      ].map(([x, y, z]) => {
+        const l = new THREE.PointLight("#ffb24a", 0, 8, 1);
+        l.position.set(JN.x + x, y, JN.z + z);
+        scene.add(l);
+        return l;
+      });
+      // "AQUÍ ESTUVO BRAYAN" sign on the far corner, facing the camera.
+      const signCanvas = document.createElement("canvas");
+      signCanvas.width = 256;
+      signCanvas.height = 128;
+      {
+        const g = signCanvas.getContext("2d");
+        g.fillStyle = "#b88f58";
+        g.fillRect(0, 0, 256, 128);
+        g.fillStyle = "#6b4a26";
+        g.fillRect(0, 0, 256, 8);
+        g.fillRect(0, 120, 256, 8);
+        g.fillStyle = "#2b1a0c";
+        g.font = "bold 34px sans-serif";
+        g.textAlign = "center";
+        g.fillText("AQUÍ ESTUVO", 128, 56);
+        g.fillText("BRAYAN", 128, 100);
+      }
+      const signTex = new THREE.CanvasTexture(signCanvas);
+      signTex.colorSpace = THREE.SRGBColorSpace;
+      const sign = mesh(
+        new THREE.BoxGeometry(1.4, 0.7, 0.06),
+        [plank, plank, plank, plank, new THREE.MeshLambertMaterial({ map: signTex }), plank],
+        JN.x - 2,
+        1.6,
+        JN.z - 1.47,
+      );
+      sign.castShadow = false;
+
+      // ---------- COZY ROOM (x = 300) by a lava river ----------
+      const RM = new THREE.Vector3(300, 0, 0);
+      for (let x = -5; x <= 5; x++)
+        for (let z = -5; z <= 3; z++) {
+          const edge = x === -5 || x === 5 || z === -5;
+          if (!edge) continue;
+          for (let y = 0; y < 4; y++) cube(caveStone, RM.x + x, y + 0.5, RM.z + z);
+        }
+      mesh(new THREE.BoxGeometry(12, 1, 10), caveStone, RM.x, -0.5, RM.z - 1);
+      mesh(new THREE.BoxGeometry(12, 1, 10), caveStone, RM.x, 4.5, RM.z - 1);
+      const lavaTex = pixelTex(16, 16, 903, (x, y, r) =>
+        pal(["#ff5a1a", "#ff8a2a", "#ffb03a", "#e8401a"], r()),
+      );
+      const lavaT = repeatTex(lavaTex, 2, 9);
+      const lava = mesh(
+        new THREE.BoxGeometry(2, 0.1, 9),
+        new THREE.MeshBasicMaterial({ map: lavaT }),
+        RM.x + 3.6,
+        0.02,
+        RM.z - 1,
+      );
+      lava.castShadow = false;
+      const lavaLight = new THREE.PointLight("#ff7a2a", 0, 12, 1);
+      lavaLight.position.set(RM.x + 3, 1.5, RM.z - 1);
+      scene.add(lavaLight);
+      // Bed, table, painting.
+      mesh(new THREE.BoxGeometry(1.2, 0.5, 2), flat("#c43a3a"), RM.x - 3.6, 0.25, RM.z - 3);
+      mesh(new THREE.BoxGeometry(1.2, 0.2, 0.6), flat("#f4f4f6"), RM.x - 3.6, 0.6, RM.z - 3.6);
+      mesh(new THREE.BoxGeometry(1.2, 0.1, 0.9), plank, RM.x + 0.9, 0.85, RM.z - 2.4);
+      [
+        [-0.5, -0.35],
+        [0.5, -0.35],
+        [-0.5, 0.35],
+        [0.5, 0.35],
+      ].forEach(([dx, dz]) =>
+        mesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), M(V.log), RM.x + 0.9 + dx, 0.4, RM.z - 2.4 + dz),
+      );
+      const art = pixelTex(16, 12, 904, (x, y, r) =>
+        x === 0 || y === 0 || x === 15 || y === 11
+          ? "#5a3a1c"
+          : y > 7
+            ? pal(["#3f8f3a", "#4a9b43"], r())
+            : y > 5
+              ? "#ffd36b"
+              : "#5fa8e8",
+      );
+      mesh(
+        new THREE.BoxGeometry(1.4, 1.05, 0.06),
+        [plank, plank, plank, plank, M(art), plank],
+        RM.x - 1.2,
+        2.3,
+        RM.z - 4.47,
+      );
+      const roomLight = new THREE.PointLight("#ffb24a", 0, 9, 1);
+      roomLight.position.set(RM.x - 1, 2.6, RM.z - 1);
+      scene.add(roomLight);
+
+      // ---------- PELUSA'S CAVE (x = 400) with chests ----------
+      const PC = new THREE.Vector3(400, 0, 0);
+      const caveHall = new THREE.Mesh(
+        new THREE.BoxGeometry(16, 9, 16),
+        new THREE.MeshLambertMaterial({
+          map: repeatTex(
+            pixelTex(16, 16, 905, (x, y, r) =>
+              r() < 0.04 ? "#4ff0dc" : pal(["#1c1f28", "#232631", "#191b23"], r()),
+            ),
+            8,
+            5,
+          ),
+          side: THREE.BackSide,
+        }),
+      );
+      caveHall.position.set(PC.x, 4.5, PC.z);
+      scene.add(caveHall);
+      const chestTex = pixelTex(16, 16, 906, (x, y, r) =>
+        x === 0 || x === 15 || y === 0 || y === 15 || y === 5
+          ? "#24160a"
+          : x >= 7 && x <= 8 && y >= 4 && y <= 7
+            ? "#d9d9d9"
+            : pal(["#8a5422", "#9a6029", "#a96d31"], r()),
+      );
+      const chestMat = M(chestTex);
+      [
+        [-3.5, -1.5],
+        [-3.8, 0.2],
+        [2.8, -2.6],
+        [3.6, -1.0],
+        [-2.6, -3.0],
+        [1.4, -3.4],
+      ].forEach(([x, z], i) => {
+        const c = mesh(new THREE.BoxGeometry(0.9, 0.8, 0.9), chestMat, PC.x + x, 0.4, PC.z + z);
+        c.rotation.y = i * 0.4;
+      });
+      pelusa.position.set(PC.x + 0.8, 0, PC.z - 1.6);
+      pelusa.rotation.y = 0.35;
+
+      // ---------- CHASE TUNNEL (x = 500), running toward -z ----------
+      const TN = new THREE.Vector3(500, 0, 0);
+      const tunnel = new THREE.Mesh(
+        new THREE.BoxGeometry(3.4, 3.4, 90),
+        new THREE.MeshLambertMaterial({
+          map: repeatTex(
+            pixelTex(16, 16, 907, (x, y, r) =>
+              pal(["#3a3d48", "#454956", "#2f323b", "#505463"], r()),
+            ),
+            3,
+            80,
+          ),
+          side: THREE.BackSide,
+        }),
+      );
+      tunnel.position.set(TN.x, 1.7, TN.z - 40);
+      scene.add(tunnel);
+      for (let z = 2; z > -80; z -= 5) {
+        mesh(new THREE.BoxGeometry(0.14, 0.14, 0.14), glow("#ffcf4a"), TN.x - 1.62, 1.9, TN.z + z);
+        mesh(
+          new THREE.BoxGeometry(0.14, 0.14, 0.14),
+          glow("#ffcf4a"),
+          TN.x + 1.62,
+          1.9,
+          TN.z + z - 2.5,
+        );
+      }
+      const chaseLights = [0, 1, 2].map(() => {
+        const l = new THREE.PointLight("#ffb24a", 0, 7, 1);
+        scene.add(l);
+        return l;
+      });
+      // Loot that flies out of Brayan's pockets.
+      const gemMat = glow("#5ff0ff"),
+        goldMat = flat("#f2c94c", { emissive: "#5a4100" });
+      const add = (...a) => V.bursts.push(V.burst(...a));
+
+      for (const [mat, list] of batches) {
+        const im = new THREE.InstancedMesh(box, mat, list.length);
+        list.forEach((m, i) => im.setMatrixAt(i, m));
+        im.castShadow = im.receiveShadow = true;
+        scene.add(im);
+      }
+
+      // Bursts: dive splash, dinner crumbs, the roar, loot spills, sunrise grass.
+      add(1001, [HOLE.x, 0.2, HOLE.z - 0.3], 3.9, V.dustMat, 14, 1.6);
+      add(1002, [PC.x - 1.0, 1.4, PC.z - 0.9], 22.9, glow("#4ff0dc"), 26, 3.0);
+
+      // ---------- lighting per scene ----------
+      const WARM = {
+        sun: new THREE.Color("#ffa060"),
+        si: 2.4,
+        hemi: new THREE.Color("#ffd0a0"),
+        hi: 0.75,
+        fog: new THREE.Color("#e8a070"),
+        near: 18,
+        far: 60,
+      };
+      const CAVE = {
+        sun: new THREE.Color("#000000"),
+        si: 0,
+        hemi: new THREE.Color("#7a8ac0"),
+        hi: 0.75,
+        fog: new THREE.Color("#070912"),
+        near: 8,
+        far: 36,
+      };
+      function scenery(t) {
+        const surface = t < 4.4 || t >= 27.4;
+        const m = surface ? WARM : CAVE;
+        sun.color.copy(m.sun);
+        sun.intensity = m.si;
+        if (hemi) {
+          hemi.color.copy(m.hemi);
+          hemi.intensity = m.hi;
+        }
+        scene.fog.color.copy(m.fog);
+        scene.fog.near = m.near;
+        scene.fog.far = m.far;
+        sky.style.opacity = surface ? 1 : 0;
+        V.clouds.forEach((c) => (c.visible = surface));
+        lanternLights.forEach((l) => (l.intensity = surface ? 0.4 : 0));
+        hutLight.intensity = surface ? 0.8 : 0;
+        crystalLight.intensity = 0;
+        torchLight.intensity = surface ? 0 : 4.5 + Math.sin(t * 13) * 0.4;
+        torch.visible = !surface && !(t >= 4.4 && t < 8.4);
+        jLights.forEach(
+          (l) => (l.intensity = t >= 8.4 && t < 12.4 ? 5 + Math.sin(t * 11) * 0.4 : 0),
+        );
+        lavaLight.intensity = t >= 12.4 && t < 15.2 ? 7 + Math.sin(t * 5) * 0.5 : 0;
+        roomLight.intensity = t >= 12.4 && t < 15.2 ? 3.5 : 0;
+        lavaT.offset.y = -t * 0.25;
+        shaftLight.intensity = t >= 4.4 && t < 8.4 ? 4 : 0;
+        pelusaLight.intensity =
+          t >= 15.2 && t < 27.4 ? (t >= 22.9 && t < 23.4 ? 14 : 6 + Math.sin(t * 2) * 0.8) : 0;
+      }
+
+      // ---------- shots (camera = Pipe's eyes) ----------
+      // [start, end, pos0, look0, pos1, look1, fov, up]
+      const FIRST = [
+        [12.15, 1.62, 22.6],
+        [12.6, 1.2, 18.5],
+      ];
+      const DOWN = [0, 0, -1];
+      const shots = [
+        [0, 4.4, FIRST[0], FIRST[1], [12.15, 1.6, 22.3], [12.2, 1.1, 18.6], 50],
+        [
+          4.4,
+          8.4,
+          [SH.x, 0.9, SH.z + 0.05],
+          [SH.x, -30, SH.z],
+          [SH.x, 0.5, SH.z + 0.05],
+          [SH.x, -30, SH.z],
+          62,
+          DOWN,
+        ],
+        [
+          8.4,
+          12.4,
+          [JN.x, 1.62, JN.z + 8],
+          [JN.x - 0.6, 1.4, JN.z - 2],
+          [JN.x, 1.62, JN.z + 3.2],
+          [JN.x - 1.5, 1.5, JN.z - 1.5],
+          56,
+        ],
+        [
+          12.4,
+          15.2,
+          [RM.x - 0.5, 1.62, RM.z + 2.6],
+          [RM.x + 0.6, 0.9, RM.z - 2.0],
+          [RM.x - 0.4, 1.6, RM.z + 2.2],
+          [RM.x + 0.6, 0.9, RM.z - 2.0],
+          54,
+        ],
+        [
+          15.2,
+          22.9,
+          [PC.x - 0.4, 1.62, PC.z + 6.2],
+          [PC.x - 0.2, 1.0, PC.z - 1.0],
+          [PC.x - 0.5, 1.5, PC.z + 4.6],
+          [PC.x - 0.4, 1.0, PC.z - 1.0],
+          54,
+        ],
+        [
+          22.9,
+          23.9,
+          [PC.x - 0.5, 1.5, PC.z + 4.6],
+          [PC.x - 1.1, 1.7, PC.z - 1.1],
+          [PC.x - 0.5, 1.5, PC.z + 4.9],
+          [PC.x - 1.1, 1.9, PC.z - 1.1],
+          50,
+        ],
+        [
+          23.9,
+          27.4,
+          [TN.x - 0.3, 1.62, TN.z],
+          [TN.x - 0.3, 1.5, TN.z - 20],
+          [TN.x - 0.3, 1.62, TN.z - 38],
+          [TN.x - 0.3, 1.5, TN.z - 58],
+          62,
+        ],
+        [27.4, 28.6, [12.6, 0.35, 21.4], [12.8, 4.5, 16], [12.6, 0.35, 21.4], [12.8, 4.5, 16], 56],
+        [
+          28.6,
+          29.6,
+          [12.6, 0.35, 21.4],
+          [12.5, 1.6, 18.5],
+          [12.15, 1.62, 22.6],
+          [12.35, 1.25, 18.6],
+          52,
+        ],
+        [29.6, 31.8, FIRST[0], FIRST[1], FIRST[0], FIRST[1], 50],
+      ];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      function cam(t) {
+        const s = shots.find((x) => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+        const ease = s[0] === 23.9 ? prog(t, s[0], s[1]) : smooth(prog(t, s[0], s[1]));
+        const pos = v3(s[2]).lerp(v3(s[4]), ease),
+          look = v3(s[3]).lerp(v3(s[5]), ease);
+        // Walking sway and the chase shake.
+        const walking = (t >= 8.4 && t < 12.4) || (t >= 15.2 && t < 22.9);
+        const running = t >= 23.9 && t < 27.4;
+        if (walking) pos.y += Math.abs(Math.sin(t * 7)) * 0.04;
+        if (running) {
+          pos.y += Math.abs(Math.sin(t * 13)) * 0.09;
+          pos.x += Math.sin(t * 6.5) * 0.06;
+        }
+        let shake = 0;
+        if (t >= 22.9 && t < 23.9) shake = 1 - prog(t, 22.9, 23.9) * 0.6;
+        if (running) shake = Math.max(shake, 0.35);
+        pos.x += Math.sin(t * 83) * 0.05 * shake;
+        pos.y += Math.cos(t * 71) * 0.05 * shake;
+        // Look back at Pelusa mid-chase.
+        if (t >= 25.7 && t < 26.5) {
+          const k = Math.sin(prog(t, 25.7, 26.5) * Math.PI);
+          look.lerp(new THREE.Vector3(pos.x + 0.4, 1.4, pos.z + 20), k);
+        }
+        camera.up.set(...(s[7] || [0, 1, 0]));
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = s[6];
+        camera.updateProjectionMatrix();
+        // Hands: hidden on the surface hook and ending, holding the rim in the shaft, torch up in caves.
+        const caves = t >= 4.4 && t < 27.4;
+        hands.visible = caves || (t >= 28.6 && t < 29.6);
+        const bob = running ? Math.sin(t * 13) * 0.05 : walking ? Math.sin(t * 7) * 0.02 : 0;
+        if (t >= 4.4 && t < 8.4) {
+          handR.position.set(0.34, -0.42, -0.6);
+          handL.position.set(-0.34, -0.42, -0.6);
+          handR.rotation.set(-1.2, 0, 0.2);
+          handL.rotation.set(-1.2, 0, -0.2);
+        } else {
+          handR.position.set(0.36, -0.38 + bob, -0.62);
+          handL.position.set(-0.38, -0.46 - bob, -0.6);
+          handR.rotation.set(-0.5, 0, -0.15);
+          handL.rotation.set(-0.8, 0, 0.25);
+        }
+        if (running) handL.rotation.x = -0.8 + Math.sin(t * 13) * 0.4;
+      }
+
+      // ---------- Brayan and Pelusa ----------
+      function actors(t) {
+        const B = brayan;
+        B.reset();
+        B.group.visible = false;
+        beard.visible = false;
+        potato.visible = false;
+        pick.visible = true;
+        B.group.scale.setScalar(0.95);
+        // Pelusa only lives in its cave and the chase.
+        pelusa.visible = t >= 15.2 && t < 27.4;
+        head.rotation.set(0, 0, 0);
+        teeth.visible = false;
+        mouth.scale.y = 1;
+        pelusa.position.set(PC.x + 0.8, 0, PC.z - 1.6);
+        pelusa.rotation.y = 0.35;
+        pelusa.scale.set(1, 1 + Math.sin(t * 2) * 0.03, 1); // sleeping breath
+
+        const hook = (tt) => {
+          // Next to the hole: pickaxe on shoulder, wink and thumbs up.
+          B.group.visible = true;
+          B.group.position.set(HOLE.x + 0.9, 0, HOLE.z - 0.2);
+          B.group.rotation.y = Math.atan2(12.15 - (HOLE.x + 0.9), 22.6 - (HOLE.z - 0.2));
+          B.setFace(tt >= 0 && tt < 0.4 ? "happy" : "wink");
+          B.armR.rotation.x = -2.6; // pick on shoulder
+          B.armR.rotation.z = 0.4;
+          B.armL.rotation.x = -1.4; // thumbs up
+          B.armL.rotation.z = -0.2;
+          B.head.rotation.z = -0.08;
+        };
+        if (t < 3.4) {
+          hook(t);
+          if (t < 0.25) B.setFace("wink");
+          B.group.scale.set(0.95, 0.95 + Math.sin(t * 6) * 0.02, 0.95);
+        } else if (t < 4.4) {
+          // Dive head-first like into a pool, squash and stretch, gone.
+          B.group.visible = t < 4.05;
+          const k = prog(t, 3.4, 4.0);
+          B.setFace("happy");
+          const sx = HOLE.x + 0.9 - 0.9 * k,
+            sz = HOLE.z - 0.2 + 0.2 * k;
+          B.group.position.set(sx, Math.sin(k * Math.PI) * 1.4 - (k > 0.6 ? (k - 0.6) * 5 : 0), sz);
+          B.group.rotation.y = -Math.PI / 2;
+          B.group.rotation.x = 2.6 * k;
+          B.armL.rotation.x = B.armR.rotation.x = -3.0;
+          const stretch = k < 0.3 ? 1 - k : 1 + (k - 0.3) * 0.6;
+          B.group.scale.set(0.95 / Math.sqrt(stretch), 0.95 * stretch, 0.95 / Math.sqrt(stretch));
+        } else if (t >= 12.4 && t < 15.2) {
+          // "Me mudé": sitting by the lava, eating a baked potato.
+          B.group.visible = true;
+          B.group.position.set(RM.x + 0.6, -0.28, RM.z - 1.6);
+          B.group.rotation.y = Math.atan2(-0.4 - 0.6, 2.4 + 1.6);
+          B.legL.rotation.x = B.legR.rotation.x = -1.5;
+          potato.visible = true;
+          pick.visible = false;
+          const bite = Math.max(0, Math.sin((t - 12.4) * 5));
+          B.armL.rotation.x = -1.4 - bite * 0.9;
+          B.setFace(t >= 13.5 && t < 14.3 ? "eat" : "happy");
+          const joy = t >= 13.6 && t < 14.3 ? Math.sin(prog(t, 13.6, 14.3) * Math.PI) : 0;
+          B.group.scale.set(
+            0.95 * (1 - joy * 0.08),
+            0.95 * (1 + joy * 0.15),
+            0.95 * (1 - joy * 0.08),
+          );
+        } else if (t >= 15.2 && t < 23.9) {
+          // Three days later: absurd beard, petting the sleeping beast.
+          B.group.visible = true;
+          beard.visible = true;
+          pick.visible = false;
+          B.group.position.set(PC.x - 1.6, 0, PC.z + 0.4);
+          B.group.rotation.y = Math.atan2(-0.4 + 1.6, 6 - 0.4) + 0.4;
+          B.setFace(t >= 16.2 && t < 18.9 ? "sleepy" : "happy");
+          B.armR.rotation.x = -1.3 + Math.sin(t * 3) * 0.25; // petting
+          B.armR.rotation.z = 0.5;
+          if (t >= 16.2 && t < 17.0) B.armL.rotation.x = -2.2; // "shhh"
+          if (t >= 22.9) {
+            B.setFace("scared");
+            B.group.scale.set(1.15, 0.7, 1.15); // squash in fright
+            B.armL.rotation.z = -2.6;
+            B.armR.rotation.z = 2.6;
+          }
+          // Pelusa wakes and roars.
+          if (t >= 22.6) {
+            const k = smooth(prog(t, 22.6, 22.9));
+            head.rotation.x = -0.5 * k;
+            head.position.y = 0.75 + 0.4 * k;
+            teeth.visible = k > 0.5;
+            mouth.scale.y = 1 + 9 * k;
+          }
+        } else if (t >= 23.9 && t < 27.4) {
+          // The chase: Brayan sprints beside the camera, loot flying.
+          B.group.visible = true;
+          beard.visible = t < 25.9;
+          const k = prog(t, 23.9, 27.4);
+          B.group.position.set(TN.x + 0.35, Math.abs(Math.sin(t * 13)) * 0.12, TN.z - 3.0 - 38 * k);
+          B.group.rotation.y = Math.PI;
+          B.setFace("scared");
+          const s = Math.sin(t * 16) * 1.1;
+          B.legL.rotation.x = s;
+          B.legR.rotation.x = -s;
+          B.armL.rotation.x = -s;
+          B.armR.rotation.x = s;
+          B.head.rotation.y = Math.sin(t * 5) * 0.3;
+          // Pelusa thundering behind (seen on the look-back).
+          pelusa.visible = true;
+          pelusa.position.set(TN.x, -0.1, TN.z + 10 - 38 * k + Math.sin(t * 3) * 0.6);
+          pelusa.rotation.y = Math.PI / 2;
+          head.rotation.x = -0.4;
+          teeth.visible = true;
+          mouth.scale.y = 8;
+          pelusa.scale.setScalar(0.85);
+        } else if (t >= 27.4) {
+          // Sunrise: lying on the grass, then gets up and turns with the same grin.
+          B.group.visible = true;
+          const up = smooth(prog(t, 28.7, 29.6));
+          B.group.position.set(
+            lerp(13.6, HOLE.x + 0.9, up),
+            0.3 * (1 - up),
+            lerp(20.6, HOLE.z - 0.2, up),
+          );
+          B.group.rotation.x = -1.45 * (1 - up);
+          B.group.rotation.y = lerp(
+            1.2,
+            Math.atan2(12.15 - (HOLE.x + 0.9), 22.6 - (HOLE.z - 0.2)),
+            up,
+          );
+          B.setFace(t < 28.7 ? "sleepy" : "happy");
+          if (t >= 29.6) hook(t);
+          if (t >= 31.55) B.setFace("wink");
+        }
+
+        // Chase loot spills and chase lights follow the camera.
+        chaseLights.forEach((l, i) => {
+          const on = t >= 23.9 && t < 27.4;
+          l.intensity = on ? 5 : 0;
+          l.position.set(TN.x + (i === 1 ? 1.2 : -1.2), 2.2, camera.position.z - 4 - i * 6);
+        });
+      }
+      // Loot flies out of Brayan's pockets during the chase (positions follow his run).
+      const chaseZ = (t) => TN.z - 3.0 - 38 * prog(t, 23.9, 27.4);
+      [24.1, 24.5, 24.9, 25.3, 25.8, 26.3].forEach((t0, i) =>
+        add(1100 + i, [TN.x + 0.35, 1.2, chaseZ(t0) + 0.4], t0, i % 2 ? gemMat : goldMat, 6, 1.4),
+      );
+      add(1110, [TN.x + 0.35, 1.0, chaseZ(25.9)], 25.9, flat("#6b4a26"), 10, 1.2); // the beard falls off
+      add(1111, [13.4, 0.3, 20.6], 27.45, V.dustMat, 10, 1.0); // flop onto the grass
+
+      function renderAt(t) {
+        scenery(t);
+        actors(t);
+        cam(t);
+        V.renderBursts(t);
+        renderer.render(scene, camera);
+      }
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
