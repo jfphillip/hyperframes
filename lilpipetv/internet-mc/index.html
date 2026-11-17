@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --stroke: #1b1b1b;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #78a7ff;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--font-display);
+        background: linear-gradient(180deg, #78a7ff 0%, #9fc2ff 50%, #c4dbff 100%);
+      }
+      img,
+      canvas.mc {
+        image-rendering: pixelated;
+      }
+      #sunsq {
+        position: absolute;
+        left: 700px;
+        top: 120px;
+        width: 150px;
+        height: 150px;
+        background: #fff9c4;
+        box-shadow: 0 0 60px rgba(255, 250, 200, 0.7);
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #lavasight {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 50%,
+          rgba(255, 120, 20, 0.55),
+          rgba(220, 60, 0, 0.9)
+        );
+        opacity: 0;
+      }
+      /* Labels that explain each gag */
+      #pov {
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        top: 200px;
+        text-align: center;
+      }
+      #pov span {
+        display: inline-block;
+        color: #fff;
+        font-size: 66px;
+        line-height: 1.1;
+        -webkit-text-stroke: 16px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 8px 0 var(--stroke);
+      }
+      .stage {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 470px;
+        display: flex;
+        justify-content: center;
+      }
+      .stage span {
+        display: block;
+        padding: 16px 32px 10px;
+        background: #ffd23f;
+        color: var(--stroke);
+        font-size: 64px;
+        line-height: 1;
+        border: 9px solid var(--stroke);
+        box-shadow: 0 12px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1050px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: #ffd23f;
+        font-size: 72px;
+        line-height: 1.1;
+        -webkit-text-stroke: 15px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      /* Minecraft HUD */
+      #hud {
+        position: absolute;
+        inset: 0;
+      }
+      #crosshair {
+        position: absolute;
+        left: 510px;
+        top: 930px;
+        width: 60px;
+        height: 60px;
+      }
+      #hotbar {
+        position: absolute;
+        left: 176px;
+        top: 1228px;
+        width: 728px;
+        height: 88px;
+      }
+      #hotsel {
+        position: absolute;
+        left: 172px;
+        top: 1224px;
+        width: 96px;
+        height: 96px;
+      }
+      .slot {
+        position: absolute;
+        top: 1240px;
+        width: 64px;
+        height: 64px;
+      }
+      #hearts,
+      #food {
+        position: absolute;
+        top: 1180px;
+        display: flex;
+        gap: -4px;
+      }
+      #hearts {
+        left: 176px;
+      }
+      #food {
+        right: 176px;
+        flex-direction: row-reverse;
+      }
+      .icon9 {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        margin-right: -4px;
+      }
+      .icon9 img {
+        position: absolute;
+        inset: 0;
+        width: 36px;
+        height: 36px;
+      }
+      #ping {
+        position: absolute;
+        right: 70px;
+        top: 390px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      #ping img {
+        width: 50px;
+        height: 40px;
+      }
+      #chat {
+        position: absolute;
+        left: 30px;
+        top: 700px;
+        display: flex;
+        flex-direction: column;
+      }
+      #chat .line {
+        padding: 2px 8px;
+        background: rgba(0, 0, 0, 0.5);
+        width: 760px;
+      }
+      #chat .line canvas {
+        display: block;
+      }
+      #chatbox {
+        position: absolute;
+        left: 30px;
+        top: 1130px;
+        width: 1020px;
+        padding: 6px 10px;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      /* Death screen */
+      #dead {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(80, 0, 0, 0.38), rgba(128, 48, 48, 0.63));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+      }
+      .mcbtn {
+        position: relative;
+        width: 800px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mcbtn img {
+        position: absolute;
+        inset: 0;
+        width: 800px;
+        height: 80px;
+      }
+      .mcbtn canvas {
+        position: relative;
+      }
+      /* Disconnect screen */
+      #lost {
+        position: absolute;
+        inset: 0;
+        background-color: #262224;
+        background-size: 128px 128px;
+        image-rendering: pixelated;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 34px;
+      }
+      #bar {
+        width: 700px;
+        height: 24px;
+        background: #3a3a3a;
+        border: 4px solid #000;
+      }
+      #bar i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: #80ff20;
+        transform-origin: left center;
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1340px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="24.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div id="sky" class="clip" data-start="0" data-duration="24.5" data-track-index="0">
+        <div id="sunsq"></div>
+      </div>
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="0"
+      ></canvas>
+      <div
+        id="lavasight"
+        class="clip"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="1"
+      ></div>
+
+      <div id="hud" class="clip" data-start="0" data-duration="17.5" data-track-index="2">
+        <img id="crosshair" src="assets/mc/gui/crosshair.png" alt="" />
+        <img id="hotbar" src="assets/mc/gui/hotbar.png" alt="" />
+        <img id="hotsel" src="assets/mc/gui/hotbar_selection.png" alt="" />
+        <img class="slot" src="assets/mc/block/cobblestone.png" alt="" style="left: 188px" />
+        <img class="slot" src="assets/mc/block/oak_planks.png" alt="" style="left: 268px" />
+        <img class="slot" src="assets/mc/block/dirt.png" alt="" style="left: 348px" />
+        <div id="hearts">
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+          <div class="icon9">
+            <img src="assets/mc/gui/heart_container.png" alt="" /><img
+              src="assets/mc/gui/heart_full.png"
+              alt=""
+            />
+          </div>
+        </div>
+        <div id="food">
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+          <div class="icon9"><img src="assets/mc/gui/food_full.png" alt="" /></div>
+        </div>
+        <div id="ping">
+          <img id="ping-good" src="assets/mc/gui/ping_5.png" alt="" /><img
+            id="ping-bad"
+            src="assets/mc/gui/ping_1.png"
+            alt=""
+          /><canvas class="mc" id="ping-ms" data-text="12 ms" data-scale="4"></canvas
+          ><canvas
+            class="mc"
+            id="ping-ms-bad"
+            data-text="999 ms"
+            data-scale="4"
+            data-color="#ff5555"
+          ></canvas>
+        </div>
+      </div>
+      <div id="hud2" class="clip" data-start="21.0" data-duration="3.5" data-track-index="2">
+        <img
+          src="assets/mc/gui/crosshair.png"
+          alt=""
+          style="position: absolute; left: 510px; top: 930px; width: 60px; height: 60px"
+        />
+        <img
+          src="assets/mc/gui/hotbar.png"
+          alt=""
+          style="position: absolute; left: 176px; top: 1228px; width: 728px; height: 88px"
+        />
+        <img
+          src="assets/mc/gui/hotbar_selection.png"
+          alt=""
+          style="position: absolute; left: 172px; top: 1224px; width: 96px; height: 96px"
+        />
+        <img
+          src="assets/mc/block/cobblestone.png"
+          alt=""
+          style="position: absolute; left: 188px; top: 1240px; width: 64px; height: 64px"
+        />
+        <div
+          style="
+            position: absolute;
+            right: 70px;
+            top: 390px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.5);
+          "
+        >
+          <img src="assets/mc/gui/ping_5.png" alt="" style="width: 50px; height: 40px" /><canvas
+            class="mc"
+            data-text="12 ms"
+            data-scale="4"
+          ></canvas>
+        </div>
+      </div>
+
+      <div id="chat" class="clip" data-start="8.6" data-duration="4.2" data-track-index="3">
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line flood">
+          <canvas class="mc" data-text="<Pipe> ayuda" data-scale="4"></canvas>
+        </div>
+        <div class="line" id="r1">
+          <canvas
+            class="mc"
+            data-text="<Brayan> todo bien bro?"
+            data-scale="4"
+            data-color="#ffff55"
+          ></canvas>
+        </div>
+        <div class="line" id="r2">
+          <canvas class="mc" data-text="<Brayan> ???" data-scale="4" data-color="#ffff55"></canvas>
+        </div>
+      </div>
+      <div id="chatbox" class="clip" data-start="8.9" data-duration="1.6" data-track-index="3">
+        <canvas class="mc" id="typed" data-text="ayuda_" data-scale="4"></canvas>
+      </div>
+
+      <div id="dead" class="clip" data-start="3.55" data-duration="0.65" data-track-index="4">
+        <canvas class="mc" data-text="Has muerto" data-scale="9"></canvas>
+        <canvas class="mc" data-text="Puntuación: 0" data-scale="4"></canvas>
+        <div class="mcbtn">
+          <img src="assets/mc/gui/button.png" alt="" /><canvas
+            class="mc"
+            data-text="Reaparecer"
+            data-scale="4"
+          ></canvas>
+        </div>
+        <div class="mcbtn">
+          <img src="assets/mc/gui/button.png" alt="" /><canvas
+            class="mc"
+            data-text="Pantalla de título"
+            data-scale="4"
+          ></canvas>
+        </div>
+      </div>
+
+      <div
+        id="lost"
+        class="clip"
+        data-start="17.5"
+        data-duration="3.5"
+        data-track-index="4"
+        style="background-image: url(assets/mc/gui/menu_background.png)"
+      >
+        <canvas class="mc" id="lost-h" data-text="Conexión perdida" data-scale="7"></canvas>
+        <canvas
+          class="mc"
+          id="lost-p"
+          data-text="Se agotó el tiempo de espera"
+          data-scale="4"
+          data-color="#aaaaaa"
+        ></canvas>
+        <div class="mcbtn" id="lost-btn">
+          <img src="assets/mc/gui/button.png" alt="" /><canvas
+            class="mc"
+            data-text="Volver al menú"
+            data-scale="4"
+          ></canvas>
+        </div>
+        <canvas class="mc" id="recon" data-text="Reconectando..." data-scale="5"></canvas>
+        <div id="bar"><i id="bar-fill"></i></div>
+      </div>
+
+      <div id="pov" class="clip" data-start="0" data-duration="24.5" data-track-index="5">
+        <span>POV: se te cae el internet en Minecraft</span>
+      </div>
+      <div id="st1" class="stage clip" data-start="4.3" data-duration="2.0" data-track-index="6">
+        <span>PONES 1 BLOQUE…</span>
+      </div>
+      <div id="st2" class="stage clip" data-start="8.7" data-duration="1.6" data-track-index="6">
+        <span>ESCRIBES EN EL CHAT…</span>
+      </div>
+      <div id="st3" class="stage clip" data-start="12.9" data-duration="1.4" data-track-index="6">
+        <span>Y TU AMIGO…</span>
+      </div>
+      <div id="st0" class="stage clip" data-start="1.3" data-duration="1.1" data-track-index="6">
+        <span>LAG…</span>
+      </div>
+
+      <div id="c1" class="cap clip" data-start="2.45" data-duration="1.1" data-track-index="7">
+        <span>¡NO, NO, NO, NO!</span>
+      </div>
+      <div id="c2" class="cap clip" data-start="6.55" data-duration="1.4" data-track-index="7">
+        <span>¿QUÉ?</span>
+      </div>
+      <div id="c3" class="cap clip" data-start="17.75" data-duration="1.7" data-track-index="7">
+        <span>¡NOOOO!</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="24.5" data-track-index="8">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="24.5" data-track-index="9"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="11"
+        data-volume="0.55"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="12"
+        data-volume="0.2"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+      const tl = gsap.timeline({ paused: true });
+      tl.set(["#flash", "#lavasight"], { opacity: 0 }, 0);
+      tl.set(".flood", { opacity: 0 }, 0);
+      tl.set(["#r1", "#r2", "#recon", "#bar", "#ping-bad", "#ping-ms-bad"], { opacity: 0 }, 0);
+      const slam = (sel, at, rot = -2) =>
+        tl.fromTo(
+          sel,
+          { scale: 2.4, opacity: 0, rotation: rot * 3 },
+          { scale: 1, opacity: 1, rotation: rot, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+      ["#st0 span", "#st1 span", "#st2 span", "#st3 span"].forEach((s, i) =>
+        slam(s, [1.3, 4.3, 8.7, 12.9][i]),
+      );
+      // Ping goes red whenever the connection lags.
+      [
+        [1.1, 4.2],
+        [4.4, 6.3],
+        [9.6, 10.5],
+        [12.8, 17.5],
+      ].forEach(([a, b]) => {
+        tl.to(["#ping-bad", "#ping-ms-bad"], { opacity: 1, duration: 0.01 }, a);
+        tl.to(["#ping-good", "#ping-ms"], { opacity: 0, duration: 0.01 }, a);
+        tl.to(["#ping-bad", "#ping-ms-bad"], { opacity: 0, duration: 0.01 }, b);
+        tl.to(["#ping-good", "#ping-ms"], { opacity: 1, duration: 0.01 }, b);
+      });
+      tl.to("#lavasight", { opacity: 1, duration: 0.1 }, 3.25);
+      tl.to("#lavasight", { opacity: 0, duration: 0.05 }, 4.2);
+      // Chat: one "ayuda"... then the backlog floods in at once.
+      tl.fromTo(
+        "#typed",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "steps(6)" },
+        8.95,
+      );
+      document
+        .querySelectorAll(".flood")
+        .forEach((p, i) =>
+          tl.fromTo(p, { opacity: 0 }, { opacity: 1, duration: 0.02 }, 10.5 + i * 0.06),
+        );
+      tl.to("#r1", { opacity: 1, duration: 0.02 }, 11.4);
+      tl.to("#r2", { opacity: 1, duration: 0.02 }, 12.1);
+      // Disconnect and reconnect.
+      tl.to(["#lost-h", "#lost-p", "#lost-btn"], { opacity: 0, duration: 0.1 }, 19.5);
+      tl.to(["#recon", "#bar"], { opacity: 1, duration: 0.1 }, 19.6);
+      tl.fromTo("#bar-fill", { scaleX: 0 }, { scaleX: 1, duration: 1.3, ease: "steps(8)" }, 19.65);
+      tl.to("#flash", { opacity: 0.8, duration: 0.03 }, 15.6);
+      tl.to("#flash", { opacity: 0, duration: 0.25 }, 15.63);
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 14 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import {
+        THREE,
+        blockMaterials,
+        lavaFrame,
+        Blocks,
+        makePlayer,
+        makeArm,
+        paintSkin,
+        hash,
+        drawText,
+      } from "./lib/mc.js";
+
+      // ---------- game-font text in the HUD and screens ----------
+      const texts = [...document.querySelectorAll("canvas.mc")].map((c) =>
+        drawText(c, c.dataset.text, {
+          dir: "assets/mc/gui",
+          scale: parseFloat(c.dataset.scale || 4),
+          color: c.dataset.color || "#ffffff",
+        }),
+      );
+
+      // ---------- skins ----------
+      const PIPE = {
+        skin: "#c98f6e",
+        skinD: "#b07a5b",
+        skinL: "#d9a283",
+        hair: "#2a1c12",
+        hairL: "#3b2818",
+      };
+      const pipeSkin = paintSkin((part, face, x, y, w, h) => {
+        const n = hash(x, y, part.length * 7 + face.length);
+        const S = n < 0.2 ? PIPE.skinD : n > 0.85 ? PIPE.skinL : PIPE.skin;
+        const hair = n < 0.3 ? PIPE.hairL : PIPE.hair;
+        if (part === "head") {
+          if (face === "top") return hair;
+          if (face === "back") return y < 6 ? hair : PIPE.skinD;
+          if (face === "left" || face === "right") return y < 3 ? hair : y === 3 ? "#121212" : S;
+          if (face === "bottom") return PIPE.skinD;
+          if (y < 2) return hair;
+          if (y === 2) return x === 0 || x === 7 ? hair : S;
+          if (y === 3) return x === 1 || x === 2 || x === 5 || x === 6 ? "#f2a33a" : "#121212";
+          if (y === 4) return x === 1 || x === 2 || x === 5 || x === 6 ? "#c9741c" : S;
+          if (y === 6) return x >= 2 && x <= 5 ? "#a4584a" : S;
+          return S;
+        }
+        if (part === "body") {
+          if (y === 10) return face === "front" && (x === 3 || x === 4) ? "#6b6b6b" : "#151515";
+          if (y === 11) return "#e6e6ea";
+          if (face === "front" && (y === 5 || y === 7) && x > 1 && x < 6) return PIPE.skinD;
+          return S;
+        }
+        if (part.startsWith("leg"))
+          return y < 5 ? (y === 4 ? "#c9c9cf" : "#ececf0") : y === 11 ? PIPE.skinD : S;
+        return S; // arms
+      });
+      const BR = {
+        skin: "#d9a07a",
+        skinD: "#c08a66",
+        shirt: "#8fe03a",
+        shirtD: "#6cbf22",
+        cap: "#d63a32",
+        capD: "#a82a24",
+        pants: "#3a4a6a",
+      };
+      const brayanSkin = paintSkin((part, face, x, y) => {
+        const n = hash(x, y, part.length * 11 + face.length);
+        if (part === "head") {
+          if (face === "top") return n < 0.3 ? BR.capD : BR.cap;
+          if (face === "back") return y < 2 ? BR.cap : y < 4 ? BR.capD : "#3a2214"; // backwards brim
+          if (face === "left" || face === "right")
+            return y < 2 ? BR.cap : y < 4 ? "#3a2214" : BR.skin;
+          if (face === "bottom") return BR.skinD;
+          if (y < 2) return y === 0 ? BR.cap : BR.capD;
+          if (y === 2) return x === 1 || x === 2 || x === 5 || x === 6 ? "#3a2214" : BR.skin;
+          if (y === 3 || y === 4) {
+            if (!(x === 1 || x === 2 || x === 5 || x === 6)) return BR.skin;
+            return y === 4 && (x === 2 || x === 6) ? "#111111" : "#ffffff";
+          }
+          if (y === 6)
+            return x >= 1 && x <= 6 ? (x === 1 || x === 6 ? "#7a2a1a" : "#ffffff") : BR.skin;
+          return y === 7 ? BR.skinD : BR.skin;
+        }
+        if (part === "body")
+          return y > 9
+            ? BR.pants
+            : face === "left" || face === "right"
+              ? BR.shirtD
+              : n < 0.15
+                ? BR.shirtD
+                : BR.shirt;
+        if (part.startsWith("arm")) return y < 4 ? BR.shirt : n < 0.2 ? BR.skinD : BR.skin;
+        return y > 10 ? "#2a2a2a" : n < 0.2 ? "#2c3a55" : BR.pants;
+      });
+
+      // ---------- scene ----------
+      const canvas = document.getElementById("world");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: false,
+        alpha: true,
+        preserveDrawingBuffer: true,
+      });
+      renderer.setPixelRatio(1);
+      renderer.setSize(1080, 1920, false);
+      renderer.setClearColor(0x000000, 0);
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.Fog("#c4dbff", 26, 64);
+      const camera = new THREE.PerspectiveCamera(70, 1080 / 1920, 0.05, 200);
+      scene.add(camera);
+      // Minecraft-like face shading: bright tops, darker sides.
+      scene.add(new THREE.HemisphereLight("#ffffff", "#8a8a8a", 1.6));
+      const sunLight = new THREE.DirectionalLight("#ffffff", 1.4);
+      sunLight.position.set(3, 10, 6);
+      scene.add(sunLight);
+
+      const mats = await blockMaterials("assets/mc/block");
+      const B = new Blocks(scene);
+      // Ground: one layer of grass blocks with a 3-wide lava trench (z -1..-8).
+      const inPool = (x, z) => Math.abs(x) <= 1 && z <= -1 && z >= -8;
+      for (let x = -16; x <= 16; x++)
+        for (let z = -22; z <= 16; z++) {
+          if (inPool(x, z)) {
+            B.add(mats.stone, x, -1.5, z);
+            continue;
+          }
+          B.add(mats.grass, x, -0.5, z);
+        }
+      const lava = new THREE.Mesh(new THREE.BoxGeometry(3, 0.02, 8), mats.lava);
+      lava.position.set(0, -0.13, -4.5);
+      scene.add(lava);
+      const lavaGlow = new THREE.PointLight("#ff8a30", 3, 6, 1);
+      lavaGlow.position.set(0, 0.6, -4.5);
+      scene.add(lavaGlow);
+      // Parkour: cobblestone stepping stones across the lava to a diamond block.
+      const STEPS = [-2, -4, -6];
+      STEPS.forEach((z, i) => B.add(mats.cobble, i === 1 ? 1 : 0, -0.5, z));
+      const goal = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mats.diamond);
+      goal.position.set(0, 0.5, -10);
+      scene.add(goal);
+      // Oak trees and a small plank house so the world reads as Minecraft at a glance.
+      const tree = (x, z, h) => {
+        for (let y = 0; y < h; y++) B.add(mats.log, x, y + 0.5, z);
+        for (let dx = -2; dx <= 2; dx++)
+          for (let dz = -2; dz <= 2; dz++)
+            for (let dy = 0; dy < 2; dy++) {
+              if (Math.abs(dx) === 2 && Math.abs(dz) === 2 && hash(dx, dz, x) < 0.6) continue;
+              B.add(mats.leaves, x + dx, h - 1.5 + dy, z + dz);
+            }
+        [
+          [0, 0],
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ].forEach(([dx, dz]) => B.add(mats.leaves, x + dx, h + 0.5, z + dz));
+      };
+      tree(-5, -7, 5);
+      tree(6, -3, 5);
+      tree(-7, 3, 4);
+      tree(5, -13, 5);
+      tree(-4, -16, 4);
+      for (let x = 4; x <= 8; x++)
+        for (let z = 6; z <= 10; z++)
+          for (let y = 0; y < 4; y++) {
+            const edge = x === 4 || x === 8 || z === 6 || z === 10;
+            if (!edge) continue;
+            if (x === 6 && z === 6 && y < 2) continue; // doorway
+            const corner = (x === 4 || x === 8) && (z === 6 || z === 10);
+            B.add(corner ? mats.log : mats.planks, x, y + 0.5, z);
+          }
+      for (let x = 3; x <= 9; x++) for (let z = 5; z <= 11; z++) B.add(mats.planks, x, 4.5, z);
+      B.flush();
+      // Trap blocks that lag in all at once around Pipe.
+      const SPAWN = new THREE.Vector3(0, 0, 6);
+      const trap = [
+        [1, 0.5, 0],
+        [-1, 0.5, 0],
+        [0, 0.5, 1],
+        [0, 0.5, -1],
+        [1, 1.5, 0],
+        [-1, 1.5, 0],
+        [0, 1.5, -1],
+        [0, 1.5, 1],
+        [0, 2.5, 0],
+      ].map(([x, y, z]) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mats.cobble);
+        m.position.set(SPAWN.x + x, y, SPAWN.z + z);
+        m.visible = false;
+        scene.add(m);
+        return m;
+      });
+
+      // ---------- characters ----------
+      const brayan = makePlayer(brayanSkin);
+      scene.add(brayan.group);
+      // First-person: Pipe's right arm, or the block in his hand.
+      const arm = makeArm(pipeSkin);
+      const held = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.32, 0.32), mats.cobble);
+      const fp = new THREE.Group();
+      fp.add(arm, held);
+      camera.add(fp);
+
+      // ---------- frozen time ----------
+      const freezes = [
+        [1.3, 2.4],
+        [16.6, 17.5],
+      ];
+      const worldT = (t) => {
+        for (const [a, b] of freezes) if (t >= a && t < b) return a;
+        return t;
+      };
+      const lerp = (a, b, k) => a + (b - a) * k;
+      const prog = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
+      const smooth = (k) => k * k * (3 - 2 * k);
+
+      // ---------- camera (Pipe's eyes) ----------
+      const EYE = 1.62;
+      const START = new THREE.Vector3(0, EYE, 0.2),
+        START_LOOK = new THREE.Vector3(0.1, 0.4, -10);
+      function cam(t, wt) {
+        const pos = START.clone(),
+          look = START_LOOK.clone();
+        let fov = 70;
+        if (t < 1.0 || t >= 21.0) {
+          pos.y += Math.sin(wt * 2) * 0.01;
+        } else if (t < 2.7) {
+          // Jump to the first stone; freeze mid-air; rubber-band back at 2.4.
+          if (t < 2.4) {
+            const k = prog(wt, 1.0, 1.6);
+            pos.z = lerp(0.2, -2, k);
+            pos.y = EYE + Math.sin(k * Math.PI) * 1.0;
+          }
+        } else if (t < 3.55) {
+          // Second try: a lag spike drops him into the lava.
+          const k = prog(t, 2.75, 3.45);
+          pos.z = lerp(0.2, -0.9, Math.min(1, k * 2));
+          pos.y = EYE + Math.sin(Math.min(1, k * 2) * Math.PI) * 0.5 - Math.max(0, k - 0.4) * 2.6;
+          look.y = lerp(0.4, -2, smooth(k));
+        } else if (t < 4.2) {
+          pos.set(0, 0.05, -0.9);
+          look.set(0, -0.5, -4);
+        } else if (t < 8.6) {
+          pos.set(SPAWN.x, EYE, SPAWN.z);
+          look.set(SPAWN.x - 0.9, 1.1, SPAWN.z - 3);
+          if (t >= 6.3) look.set(SPAWN.x, 1.3, SPAWN.z - 3);
+        } else if (t < 17.5) {
+          pos.set(SPAWN.x + 0.4, EYE, SPAWN.z + 1.2);
+          look.set(SPAWN.x - 0.9, 1.4, SPAWN.z - 2);
+          if (t >= 15.6 && t < 16.6) pos.x += Math.sin(t * 90) * 0.04 * (1 - prog(t, 15.6, 16.6));
+        }
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+
+        // First-person arm: rests bottom-right and swings on every click.
+        fp.visible = !(t >= 3.45 && t < 4.2) && !(t >= 17.5 && t < 21.0);
+        const holding = t >= 4.2 && t < 8.6;
+        arm.visible = !holding;
+        held.visible = holding;
+        let swing = 0;
+        if (t >= 4.6 && t < 6.2) swing = Math.abs(Math.sin((t - 4.6) * Math.PI * 4)); // six clicks
+        if (t >= 2.4 && t < 3.45) swing = Math.abs(Math.sin(t * 18)) * 0.8; // flailing
+        arm.scale.setScalar(0.55);
+        arm.position.set(0.16 - swing * 0.03, -0.16 + swing * 0.05, -0.42 - swing * 0.06);
+        arm.rotation.set(-1.75 + swing * 0.6, 0.45, 0.35);
+        held.scale.setScalar(0.55);
+        held.position.set(0.12 - swing * 0.03, -0.13 + swing * 0.04, -0.4 - swing * 0.05);
+        held.rotation.set(0.35 - swing * 0.5, 0.8, 0);
+      }
+
+      // ---------- Brayan ----------
+      function actors(t, wt) {
+        const P = brayan;
+        P.reset();
+        P.group.visible = false;
+        P.group.scale.setScalar(0.9);
+        if (t >= 4.2 && t < 12.8) {
+          P.group.visible = t < 6.3 || t >= 8.6;
+          P.group.position.set(SPAWN.x - 1.3, 0, SPAWN.z - 2.6);
+          P.group.rotation.y = Math.atan2(0.4 + 1.3, 1.2 + 2.6);
+          P.head.rotation.x = -0.1;
+          P.armR.rotation.x = Math.sin(wt * 3) * 0.05;
+          if (t >= 11.4) P.head.rotation.z = 0.3; // confused head tilt
+        }
+        if (t >= 12.8 && t < 17.5) {
+          P.group.visible = true;
+          // Lag T-pose: arms straight out, floating, teleporting around.
+          P.armR.rotation.z = -Math.PI / 2;
+          P.armL.rotation.z = Math.PI / 2;
+          let p = [SPAWN.x - 1.0, 1.0, SPAWN.z - 2.4];
+          if (t >= 14.0) p = [SPAWN.x - 2.4, 0.3, SPAWN.z - 3.6];
+          if (t >= 14.5) p = [SPAWN.x + 1.8, 1.6, SPAWN.z - 2.8];
+          if (t >= 15.0) p = [SPAWN.x - 0.6, 2.6, SPAWN.z - 1.6];
+          if (t >= 15.6) p = [SPAWN.x + 0.4, -0.05, SPAWN.z + 0.65]; // right in Pipe's face
+          const flick =
+            [14.0, 14.5, 15.0, 15.6].some((q) => t >= q - 0.08 && t < q) && Math.sin(t * 120) > 0;
+          P.group.visible = !flick;
+          P.group.position.set(...p);
+          P.group.rotation.y = Math.atan2(SPAWN.x + 0.4 - p[0], SPAWN.z + 1.2 - p[2]);
+        }
+      }
+
+      function renderAt(t) {
+        const wt = worldT(t);
+        lavaFrame(mats.tex.lava_still, wt);
+        goal.rotation.y = 0;
+        trap.forEach((m) => (m.visible = t >= 6.3 && t < 8.6));
+        actors(t, wt);
+        cam(t, wt);
+        renderer.render(scene, camera);
+      }
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      await Promise.all(texts);
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
