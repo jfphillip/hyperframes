@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --stroke: #1b1b1b;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #000;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Archivo Black", sans-serif;
+        background: #000;
+      }
+      img,
+      canvas.mc {
+        image-rendering: pixelated;
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #hurt {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 0, 0, 0.35);
+        opacity: 0;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+      #pov {
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        top: 200px;
+        text-align: center;
+      }
+      #pov span {
+        display: inline-block;
+        color: #fff;
+        font-size: 62px;
+        line-height: 1.1;
+        -webkit-text-stroke: 15px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      .stage {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 440px;
+        display: flex;
+        justify-content: center;
+      }
+      .stage span {
+        display: block;
+        padding: 14px 30px 8px;
+        background: #ffd23f;
+        color: var(--stroke);
+        font-size: 56px;
+        line-height: 1;
+        border: 8px solid var(--stroke);
+        box-shadow: 0 10px 0 var(--stroke);
+      }
+      .stage.red span {
+        background: #ff3b2f;
+        color: #fff;
+      }
+      .cap {
+        position: absolute;
+        left: 50px;
+        right: 50px;
+        top: 1040px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: #ffd23f;
+        font-size: 64px;
+        line-height: 1.1;
+        -webkit-text-stroke: 14px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      .cap.mom span {
+        color: #ff8fc6;
+      }
+      .cap b {
+        font-weight: normal;
+        font-size: 44px;
+      }
+      /* HUD */
+      #crosshair {
+        position: absolute;
+        left: 510px;
+        top: 930px;
+        width: 60px;
+        height: 60px;
+      }
+      #hotbar {
+        position: absolute;
+        left: 176px;
+        top: 1228px;
+        width: 728px;
+        height: 88px;
+      }
+      #hotsel {
+        position: absolute;
+        left: 172px;
+        top: 1224px;
+        width: 96px;
+        height: 96px;
+      }
+      .slot {
+        position: absolute;
+        top: 1240px;
+        width: 64px;
+        height: 64px;
+      }
+      #diacount {
+        position: absolute;
+        left: 296px;
+        top: 1268px;
+      }
+      #hearts,
+      #food {
+        position: absolute;
+        top: 1180px;
+        display: flex;
+      }
+      #hearts {
+        left: 176px;
+      }
+      #food {
+        right: 176px;
+        flex-direction: row-reverse;
+      }
+      .icon9 {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        margin-right: -4px;
+      }
+      .icon9 img {
+        position: absolute;
+        inset: 0;
+        width: 36px;
+        height: 36px;
+      }
+      /* Pause menu */
+      #pause {
+        position: absolute;
+        inset: 0;
+        background: rgba(16, 16, 16, 0.62);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+      }
+      .mcbtn {
+        position: relative;
+        width: 800px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mcbtn img {
+        position: absolute;
+        inset: 0;
+        width: 800px;
+        height: 80px;
+      }
+      .mcbtn canvas {
+        position: relative;
+      }
+      #cursor {
+        position: absolute;
+        left: 560px;
+        top: 900px;
+        width: 0;
+        height: 0;
+        border-left: 0 solid transparent;
+        border-right: 36px solid transparent;
+        border-top: 52px solid #ffffff;
+        filter: drop-shadow(0 0 3px #000);
+      }
+      #saving {
+        position: absolute;
+        inset: 0;
+        background-color: #262224;
+        background-size: 128px 128px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 40px;
+      }
+      #bar {
+        width: 700px;
+        height: 24px;
+        background: #3a3a3a;
+        border: 4px solid #000;
+      }
+      #bar i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: #80ff20;
+        transform-origin: left center;
+      }
+      /* Screen switched off */
+      #crt {
+        position: absolute;
+        inset: 0;
+        background: #000;
+      }
+      #crt i {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 1920px;
+        background: #f4f4ff;
+        transform-origin: 50% 50%;
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1340px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.85);
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 30px;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="21"
+      data-width="1080"
+      data-height="1920"
+    >
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="21"
+        data-track-index="0"
+      ></canvas>
+      <div id="hurt" class="clip" data-start="0" data-duration="21" data-track-index="1"></div>
+
+      <div id="hud" class="clip" data-start="0" data-duration="12.0" data-track-index="2">
+        <img id="crosshair" src="assets/mc/gui/crosshair.png" alt="" />
+        <img id="hotbar" src="assets/mc/gui/hotbar.png" alt="" />
+        <img id="hotsel" src="assets/mc/gui/hotbar_selection.png" alt="" />
+        <img class="slot" src="assets/mc/item/diamond_pickaxe.png" alt="" style="left: 188px" />
+        <img
+          class="slot"
+          id="diaslot"
+          src="assets/mc/item/diamond.png"
+          alt=""
+          style="left: 268px"
+        />
+        <canvas class="mc" id="diacount" data-text="1" data-scale="4"></canvas>
+        <div id="hearts"></div>
+        <div id="food"></div>
+      </div>
+      <div id="hud2" class="clip" data-start="19.0" data-duration="2.0" data-track-index="2">
+        <img
+          src="assets/mc/gui/crosshair.png"
+          alt=""
+          style="position: absolute; left: 510px; top: 930px; width: 60px; height: 60px"
+        />
+        <img
+          src="assets/mc/gui/hotbar.png"
+          alt=""
+          style="position: absolute; left: 176px; top: 1228px; width: 728px; height: 88px"
+        />
+        <img
+          src="assets/mc/gui/hotbar_selection.png"
+          alt=""
+          style="position: absolute; left: 172px; top: 1224px; width: 96px; height: 96px"
+        />
+        <img
+          src="assets/mc/item/diamond_pickaxe.png"
+          alt=""
+          style="position: absolute; left: 188px; top: 1240px; width: 64px; height: 64px"
+        />
+      </div>
+
+      <div id="pause" class="clip" data-start="12.0" data-duration="2.0" data-track-index="3">
+        <canvas class="mc" data-text="Menú del juego" data-scale="5"></canvas>
+        <div class="mcbtn">
+          <img src="assets/mc/gui/button.png" alt="" /><canvas
+            class="mc"
+            data-text="Volver al juego"
+            data-scale="4"
+          ></canvas>
+        </div>
+        <div class="mcbtn">
+          <img src="assets/mc/gui/button.png" alt="" /><canvas
+            class="mc"
+            data-text="Opciones..."
+            data-scale="4"
+          ></canvas>
+        </div>
+        <div class="mcbtn" id="quitbtn">
+          <img src="assets/mc/gui/button.png" alt="" /><img
+            id="quithl"
+            src="assets/mc/gui/button_highlighted.png"
+            alt=""
+          /><canvas class="mc" data-text="Guardar y salir" data-scale="4"></canvas>
+        </div>
+        <div id="cursor"></div>
+      </div>
+      <div
+        id="saving"
+        class="clip"
+        data-start="14.0"
+        data-duration="3.6"
+        data-track-index="3"
+        style="background-image: url(assets/mc/gui/menu_background.png)"
+      >
+        <canvas class="mc" data-text="Guardando el mundo" data-scale="6"></canvas>
+        <div id="bar"><i id="bar-fill"></i></div>
+      </div>
+      <div id="crt" class="clip" data-start="17.6" data-duration="1.4" data-track-index="4">
+        <i id="crt-line"></i>
+      </div>
+
+      <div id="pov" class="clip" data-start="0" data-duration="21" data-track-index="5">
+        <span>POV: tu mamá te llama a comer justo en lo mejor</span>
+      </div>
+      <div id="s1" class="stage clip" data-start="1.3" data-duration="1.8" data-track-index="6">
+        <span>LLAMADA 1</span>
+      </div>
+      <div id="s2" class="stage clip" data-start="7.0" data-duration="1.9" data-track-index="6">
+        <span>LLAMADA 2</span>
+      </div>
+      <div
+        id="s3"
+        class="stage red clip"
+        data-start="12.6"
+        data-duration="1.8"
+        data-track-index="6"
+      >
+        <span>ÚLTIMO AVISO</span>
+      </div>
+
+      <div id="c1" class="cap mom clip" data-start="1.3" data-duration="1.7" data-track-index="7">
+        <span><b>MAMÁ:</b> ¡PIPE! ¡A COMER!</span>
+      </div>
+      <div id="c2" class="cap clip" data-start="3.1" data-duration="1.2" data-track-index="7">
+        <span>¡YA VOY!</span>
+      </div>
+      <div id="c3" class="cap mom clip" data-start="7.0" data-duration="2.3" data-track-index="7">
+        <span><b>MAMÁ:</b> ¡SE ENFRÍA LA SOPA!</span>
+      </div>
+      <div id="c4" class="cap clip" data-start="9.4" data-duration="1.7" data-track-index="7">
+        <span>¡UN MINUTOOOO!</span>
+      </div>
+      <div
+        id="c5"
+        style="top: 1210px"
+        class="cap mom clip"
+        data-start="12.6"
+        data-duration="1.7"
+        data-track-index="7"
+      >
+        <span><b>MAMÁ:</b> UNO... DOS...</span>
+      </div>
+      <div
+        id="c6"
+        style="top: 1210px"
+        class="cap clip"
+        data-start="14.3"
+        data-duration="2.3"
+        data-track-index="7"
+      >
+        <span>¡ESPERA, ESPERA, ESPERA!</span>
+      </div>
+      <div
+        id="c7"
+        style="top: 1210px"
+        class="cap mom clip"
+        data-start="16.75"
+        data-duration="0.85"
+        data-track-index="7"
+      >
+        <span><b>MAMÁ:</b> ¡TRES!</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="21" data-track-index="8">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="21" data-track-index="9"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="21"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="21"
+        data-track-index="11"
+        data-volume="0.55"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="21"
+        data-track-index="12"
+        data-volume="0.18"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+      const tl = gsap.timeline({ paused: true });
+      tl.set(["#flash", "#hurt", "#diaslot", "#diacount", "#quithl"], { opacity: 0 }, 0);
+      const slam = (sel, at, rot = -2) =>
+        tl.fromTo(
+          sel,
+          { scale: 2.4, opacity: 0, rotation: rot * 3 },
+          { scale: 1, opacity: 1, rotation: rot, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+      ["#s1 span", "#s2 span", "#s3 span"].forEach((s, i) => slam(s, [1.3, 7.0, 12.6][i]));
+      tl.to(["#diaslot", "#diacount"], { opacity: 1, duration: 0.02 }, 5.2);
+      // Creeper blast: white flash and red hurt tint.
+      tl.to("#flash", { opacity: 0.95, duration: 0.03 }, 11.2);
+      tl.to("#flash", { opacity: 0, duration: 0.4 }, 11.25);
+      tl.to("#hurt", { opacity: 1, duration: 0.03 }, 11.25);
+      tl.to("#hurt", { opacity: 0, duration: 0.6 }, 11.4);
+      // Pause menu: the cursor slides to "Guardar y salir" and clicks.
+      tl.fromTo(
+        "#cursor",
+        { x: 0, y: 0 },
+        { x: 40, y: 180, duration: 0.8, ease: "power2.inOut" },
+        12.5,
+      );
+      tl.to("#quithl", { opacity: 1, duration: 0.02 }, 13.3);
+      tl.fromTo(
+        "#cursor",
+        { scale: 1 },
+        { scale: 0.85, duration: 0.06, yoyo: true, repeat: 1 },
+        13.6,
+      );
+      // Saving crawls... then the screen is switched off.
+      tl.fromTo(
+        "#bar-fill",
+        { scaleX: 0 },
+        { scaleX: 0.78, duration: 3.4, ease: "power3.out" },
+        14.1,
+      );
+      tl.fromTo(
+        "#crt-line",
+        { scaleY: 1, scaleX: 1, opacity: 1 },
+        { scaleY: 0.003, duration: 0.22, ease: "power3.in" },
+        17.6,
+      );
+      tl.to("#crt-line", { scaleX: 0, duration: 0.14, ease: "power3.in" }, 17.82);
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 14 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "./lib/three.module.js";
+      import {
+        loadTex,
+        blockMaterials,
+        Blocks,
+        makeArm,
+        paintSkin,
+        hash,
+        drawText,
+      } from "./lib/mc.js";
+      import { EffectComposer } from "./lib/post/EffectComposer.js";
+      import { RenderPass } from "./lib/post/RenderPass.js";
+      import { UnrealBloomPass } from "./lib/post/UnrealBloomPass.js";
+      import { OutputPass } from "./lib/post/OutputPass.js";
+
+      // ---------- HUD: hearts, food, game-font text ----------
+      const icon = (srcs) =>
+        `<div class="icon9">${srcs.map((s) => `<img src="assets/mc/gui/${s}.png" alt="" />`).join("")}</div>`;
+      const hearts = document.getElementById("hearts");
+      hearts.innerHTML = Array.from({ length: 10 }, (_, i) =>
+        icon(["heart_container", "heart_full", "heart_half"]).replace(
+          'class="icon9"',
+          `class="icon9 h${i}"`,
+        ),
+      ).join("");
+      document.getElementById("food").innerHTML = Array.from({ length: 10 }, () =>
+        icon(["food_full"]),
+      ).join("");
+      const texts = [...document.querySelectorAll("canvas.mc")].map((c) =>
+        drawText(c, c.dataset.text, {
+          dir: "assets/mc/gui",
+          scale: parseFloat(c.dataset.scale || 4),
+          color: c.dataset.color || "#ffffff",
+        }),
+      );
+
+      // ---------- renderer: bright, no filmic darkening ----------
+      const canvas = document.getElementById("world");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: false,
+        preserveDrawingBuffer: true,
+      });
+      renderer.setPixelRatio(1);
+      renderer.setSize(1080, 1920, false);
+      renderer.toneMapping = THREE.NoToneMapping;
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color("#0c0c10");
+      scene.fog = new THREE.Fog("#0c0c10", 12, 26);
+      const camera = new THREE.PerspectiveCamera(70, 1080 / 1920, 0.05, 100);
+      scene.add(camera);
+      scene.add(new THREE.HemisphereLight("#fff4e0", "#8a8478", 2.1));
+
+      // ---------- materials ----------
+      const mats = await blockMaterials("assets/mc/block");
+      const L = async (n, extra = {}) =>
+        new THREE.MeshLambertMaterial({ map: await loadTex(`assets/mc/block/${n}.png`), ...extra });
+      const M = {
+        deepslate: await L("deepslate"),
+        diamondOre: await L("deepslate_diamond_ore"),
+        coal: await L("coal_ore"),
+        iron: await L("iron_ore"),
+        gravel: await L("gravel"),
+      };
+      const stages = await Promise.all(
+        Array.from({ length: 10 }, (_, i) => loadTex(`assets/mc/block/destroy_stage_${i}.png`)),
+      );
+      const explo = await Promise.all(
+        Array.from({ length: 16 }, (_, i) => loadTex(`assets/mc/particle/explosion_${i}.png`)),
+      );
+      const diamondTex = await loadTex("assets/mc/item/diamond.png");
+      const pickTex = await loadTex("assets/mc/item/diamond_pickaxe.png");
+      const creeperTex = await loadTex("assets/mc/entity/creeper.png");
+
+      // ---------- the cave ----------
+      // Pipe stands at the origin facing -z; the ore face is at z = -2; the tunnel runs back to +z.
+      const B = new Blocks(scene);
+      const crater = [];
+      const pick = (x, y, z) => {
+        const n = hash(x, y, z);
+        if (y < 0 || y > 3) return n < 0.5 ? mats.stone : M.deepslate;
+        return n < 0.06 ? M.coal : n < 0.1 ? M.iron : n < 0.45 ? M.deepslate : mats.stone;
+      };
+      for (let x = -3; x <= 3; x++)
+        for (let z = -3; z <= 10; z++)
+          for (let y = -1; y <= 4; y++) {
+            const air = Math.abs(x) <= 1 && z >= -1 && y >= 0 && y <= 3;
+            if (air) continue;
+            const inside = Math.abs(x) <= 2 && z >= -2 && y >= -1 && y <= 4;
+            if (!inside) continue;
+            if (x === 0 && y === 1 && z === -2) continue; // the diamond ore block
+            const isCrater = y === -1 && Math.abs(x) <= 1 && z >= 2 && z <= 4;
+            if (isCrater) {
+              const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), pick(x, y, z));
+              m.position.set(x, y + 0.5, z);
+              scene.add(m);
+              crater.push(m);
+              continue;
+            }
+            B.add(pick(x, y, z), x, y + 0.5, z);
+          }
+      for (let x = -1; x <= 1; x++) for (let z = 2; z <= 4; z++) B.add(mats.stone, x, -1.5, z);
+      B.flush();
+      const ore = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), M.diamondOre);
+      ore.position.set(0, 1.5, -2);
+      scene.add(ore);
+      const crack = new THREE.Mesh(
+        new THREE.BoxGeometry(1.01, 1.01, 1.01),
+        new THREE.MeshBasicMaterial({
+          map: stages[0],
+          transparent: true,
+          opacity: 0.85,
+          depthWrite: false,
+        }),
+      );
+      crack.position.copy(ore.position);
+      scene.add(crack);
+      // Torches on the walls: warm, bright light like torch light level 14.
+      const torchMat = new THREE.MeshBasicMaterial({ color: "#ffd36b" });
+      [
+        [-1.45, 1.9, -1.2],
+        [1.45, 1.9, 2.5],
+        [-1.45, 1.9, 6.5],
+      ].forEach(([x, y, z]) => {
+        const t = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 0.45, 0.12),
+          new THREE.MeshLambertMaterial({ color: "#6b4a26" }),
+        );
+        t.position.set(x, y - 0.2, z);
+        const f = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.16), torchMat);
+        f.position.set(x, y + 0.08, z);
+        scene.add(t, f);
+        const l = new THREE.PointLight("#ffcf8a", 3.2, 10, 1);
+        l.position.set(x * 0.7, y + 0.2, z);
+        scene.add(l);
+      });
+
+      // ---------- the creeper (64x32 skin) ----------
+      function creeperPart(w, h, d, u, v, pivotTop) {
+        const geo = new THREE.BoxGeometry(w / 16, h / 16, d / 16);
+        const R = {
+          px: [u + d + w, v + d, d, h],
+          nx: [u, v + d, d, h],
+          py: [u + d, v, w, d],
+          ny: [u + d + w, v, w, d],
+          pz: [u + d, v + d, w, h],
+          nz: [u + 2 * d + w, v + d, w, h],
+        };
+        const uv = geo.attributes.uv;
+        ["px", "nx", "py", "ny", "pz", "nz"].forEach((f, i) => {
+          const [x, y, ww, hh] = R[f];
+          const u0 = x / 64,
+            u1 = (x + ww) / 64,
+            v0 = 1 - y / 32,
+            v1 = 1 - (y + hh) / 32;
+          uv.setXY(i * 4, u0, v0);
+          uv.setXY(i * 4 + 1, u1, v0);
+          uv.setXY(i * 4 + 2, u0, v1);
+          uv.setXY(i * 4 + 3, u1, v1);
+        });
+        const g = new THREE.Group();
+        const m = new THREE.Mesh(geo, creeperMat);
+        if (pivotTop) m.position.y = -h / 32;
+        g.add(m);
+        return g;
+      }
+      const creeperMat = new THREE.MeshLambertMaterial({ map: creeperTex });
+      const creeper = new THREE.Group();
+      const cHead = creeperPart(8, 8, 8, 0, 0, false);
+      cHead.position.y = 22 / 16;
+      const cBody = creeperPart(8, 12, 4, 16, 16, false);
+      cBody.position.y = 12 / 16;
+      const legs = [
+        [-2, 4],
+        [2, 4],
+        [-2, -4],
+        [2, -4],
+      ].map(([x, z]) => {
+        const l = creeperPart(4, 6, 4, 0, 16, true);
+        l.position.set(x / 16, 6 / 16, z / 16);
+        return l;
+      });
+      creeper.add(cHead, cBody, ...legs);
+      scene.add(creeper);
+
+      // ---------- first person: arm + diamond pickaxe ----------
+      const pipeSkin = paintSkin((part, face, x, y) => {
+        const n = hash(x, y, part.length * 7 + face.length);
+        return n < 0.2 ? "#b07a5b" : n > 0.85 ? "#d9a283" : "#c98f6e";
+      });
+      const arm = makeArm(pipeSkin);
+      const pickaxe = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.26, 0.26),
+        new THREE.MeshLambertMaterial({
+          map: pickTex,
+          transparent: true,
+          alphaTest: 0.5,
+          side: THREE.DoubleSide,
+        }),
+      );
+      const fp = new THREE.Group();
+      fp.add(arm, pickaxe);
+      camera.add(fp);
+      // The diamond that pops out of the ore.
+      const drop = new THREE.Sprite(new THREE.SpriteMaterial({ map: diamondTex }));
+      drop.scale.set(0.3, 0.3, 1);
+      scene.add(drop);
+      // Break particles and explosion puffs.
+      const chips = Array.from({ length: 14 }, (_, i) => {
+        const m = new THREE.Mesh(
+          new THREE.BoxGeometry(0.08, 0.08, 0.08),
+          i % 3 ? M.deepslate : M.diamondOre,
+        );
+        scene.add(m);
+        return m;
+      });
+      const puffs = Array.from({ length: 8 }, (_, i) => {
+        const s = new THREE.Sprite(
+          new THREE.SpriteMaterial({ map: explo[0], transparent: true, depthWrite: false }),
+        );
+        s.userData = {
+          off: [(hash(i, 1) - 0.5) * 2.2, 0.3 + hash(i, 2) * 1.8, (hash(i, 3) - 0.5) * 1.6],
+          d: hash(i, 4) * 0.25,
+          size: 1.2 + hash(i, 5) * 1.2,
+        };
+        scene.add(s);
+        return s;
+      });
+
+      // ---------- post: a touch of bloom on torches ----------
+      const composer = new EffectComposer(renderer);
+      composer.setPixelRatio(1);
+      composer.setSize(1080, 1920);
+      composer.addPass(new RenderPass(scene, camera));
+      composer.addPass(new UnrealBloomPass(new THREE.Vector2(540, 960), 0.35, 0.5, 0.82));
+      composer.addPass(new OutputPass());
+
+      // ---------- timing ----------
+      const lerp = (a, b, k) => a + (b - a) * k;
+      const prog = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
+      const smooth = (k) => k * k * (3 - 2 * k);
+      const BREAK = 4.5,
+        BOOM = 11.2;
+      // Mining swings, with a pause while answering "¡Ya voy!".
+      const mining = (t) => (t >= 0.3 && t < 3.0) || (t >= 3.4 && t < BREAK) || t >= 19.0;
+      const hitting = (t) => t >= 9.4 && t < 10.3;
+
+      function renderAt(t) {
+        // Freeze the world while paused/saving/off.
+        const wt = t >= 12.0 && t < 19.0 ? 12.0 : t;
+        // Crack stages climb while mining.
+        const minedTime =
+          Math.max(0, Math.min(t, 3.0) - 0.3) + Math.max(0, Math.min(t, BREAK) - 3.4);
+        const stage = Math.min(9, Math.floor((minedTime / 3.8) * 10));
+        const loopMined = t >= 19.0 ? Math.min(9, Math.floor(((t - 19.0) / 3.8) * 10)) : -1;
+        const oreGone = t >= BREAK && t < 19.0;
+        ore.visible = !oreGone;
+        crack.visible = !oreGone && ((t >= 0.3 && t < BREAK) || t >= 19.0);
+        crack.material.map = stages[t >= 19.0 ? Math.max(0, loopMined) : stage];
+        // Chips burst when the ore breaks.
+        chips.forEach((c, i) => {
+          const dt = wt - BREAK;
+          c.visible = dt >= 0 && dt < 0.6;
+          if (!c.visible) return;
+          const a = (i / chips.length) * Math.PI * 2;
+          c.position.set(
+            Math.cos(a) * dt * 1.4,
+            1.5 + dt * 1.6 - 4.9 * dt * dt,
+            -1.6 + Math.sin(a) * dt * 0.6 + dt * 0.8,
+          );
+        });
+        // The diamond drops, bobs, then flies to Pipe.
+        const dd = wt - BREAK;
+        drop.visible = dd >= 0 && dd < 0.75 && t < 12;
+        drop.position.set(
+          0,
+          1.2 + Math.sin(dd * 8) * 0.05 + Math.max(0, 0.3 - dd) * 0.6,
+          lerp(-1.6, 0.1, smooth(prog(dd, 0.45, 0.75))),
+        );
+
+        // Creeper: walks up behind Pipe, swells and flashes, explodes.
+        creeper.visible = t >= 5.8 && t < BOOM;
+        const ck = prog(wt, 6.2, 9.3);
+        creeper.position.set(0, 0, lerp(7.5, 1.8, ck));
+        creeper.rotation.y = Math.PI;
+        const step = ck < 1 ? Math.sin(wt * 9) * 0.5 : 0;
+        legs.forEach((l, i) => (l.rotation.x = i % 3 === 0 ? step : -step));
+        const fuse = prog(wt, 10.2, BOOM);
+        const flashOn = fuse > 0 && Math.sin(wt * (14 + fuse * 30)) > 0;
+        creeperMat.emissive.set(flashOn ? "#ffffff" : "#000000");
+        creeperMat.emissiveIntensity = flashOn ? 0.8 : 0;
+        creeper.scale.set(1 + fuse * 0.25, 1 + fuse * 0.12, 1 + fuse * 0.25);
+        if (hitting(t)) creeper.position.z += Math.max(0, Math.sin((t - 9.4) * Math.PI * 4)) * 0.25; // knockback
+        crater.forEach((m) => (m.visible = wt < BOOM));
+        puffs.forEach((p) => {
+          const dt = wt - BOOM - p.userData.d;
+          p.visible = dt >= 0 && dt < 0.8;
+          if (!p.visible) return;
+          p.material.map = explo[Math.min(15, Math.floor((dt / 0.8) * 16))];
+          p.position.set(p.userData.off[0], p.userData.off[1], 2.0 + p.userData.off[2]);
+          p.scale.setScalar(p.userData.size);
+        });
+
+        // Camera: facing the ore, spinning round at the hiss, knocked back by the blast.
+        let yaw = 0;
+        if (t >= 6.0 && t < 19.0) yaw = Math.PI * smooth(prog(t, 6.0, 6.45));
+        const pos = new THREE.Vector3(0, 1.62, 0.2);
+        let pitch = -0.08;
+        if (t >= 6.45 && t < 19.0) pitch = -0.12;
+        const kb = prog(t, BOOM, BOOM + 0.25);
+        if (t >= BOOM && t < 19.0) {
+          pos.z -= 1.0 * smooth(kb);
+          pos.y -= 0.25 * Math.sin(kb * Math.PI);
+          pitch += -0.15 * (1 - smooth(prog(t, BOOM + 0.25, BOOM + 0.8)));
+        }
+        let shake = 0;
+        if (t >= BOOM && t < BOOM + 0.6) shake = 1 - prog(t, BOOM, BOOM + 0.6);
+        pos.x += Math.sin(t * 90) * 0.06 * shake;
+        pos.y += Math.cos(t * 77) * 0.06 * shake;
+        camera.position.copy(pos);
+        camera.rotation.set(pitch, yaw, Math.sin(t * 60) * 0.03 * shake, "YXZ");
+
+        // First-person swing (pickaxe in hand).
+        const swinging = mining(t) || hitting(t);
+        const sw = swinging ? Math.abs(Math.sin(t * Math.PI * 4)) : 0;
+        fp.visible = t < 12.0 || t >= 19.0;
+        arm.scale.setScalar(0.55);
+        arm.position.set(0.18 - sw * 0.04, -0.2 + sw * 0.05, -0.42 - sw * 0.05);
+        arm.rotation.set(-1.75 + sw * 0.7, 0.45, 0.35);
+        pickaxe.position.set(0.15 - sw * 0.04, -0.13 + sw * 0.06, -0.5 - sw * 0.05);
+        pickaxe.rotation.set(0.2 - sw * 0.9, -0.6, 0.25);
+
+        // Hearts: down to half a heart after the blast.
+        document.querySelectorAll("#hearts .icon9").forEach((h, i) => {
+          h.children[1].style.opacity = wt < BOOM ? 1 : 0;
+          h.children[2].style.opacity = wt >= BOOM && i === 0 ? 1 : 0;
+        });
+        composer.render();
+      }
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      await Promise.all(texts);
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
