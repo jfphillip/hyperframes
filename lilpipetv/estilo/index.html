@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #3a2f5a;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Inter", sans-serif;
+        background: #3a2f5a;
+      }
+      img,
+      canvas.mc {
+        image-rendering: pixelated;
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      /* Clean cinematic titles */
+      .title {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 360px;
+        text-align: center;
+        color: #ffffff;
+        text-shadow:
+          0 4px 24px rgba(0, 0, 0, 0.45),
+          0 2px 4px rgba(0, 0, 0, 0.35);
+      }
+      .title h1 {
+        font-weight: 900;
+        font-size: 104px;
+        line-height: 1;
+        letter-spacing: -0.02em;
+      }
+      .title p {
+        margin-top: 14px;
+        font-weight: 400;
+        font-size: 40px;
+        opacity: 0.92;
+      }
+      /* Advancement-style toast */
+      #toast {
+        position: absolute;
+        left: 220px;
+        top: 250px;
+        width: 640px;
+        height: 128px;
+      }
+      #toast > img.bg {
+        position: absolute;
+        inset: 0;
+        width: 640px;
+        height: 128px;
+      }
+      #toast .ico {
+        position: absolute;
+        left: 32px;
+        top: 32px;
+        width: 64px;
+        height: 64px;
+      }
+      #toast canvas {
+        position: absolute;
+        left: 120px;
+      }
+      /* Floating pickup counter */
+      #pickup {
+        position: absolute;
+        left: 600px;
+        top: 760px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #pickup img {
+        width: 64px;
+        height: 64px;
+      }
+      /* Chest GUI */
+      #chest {
+        position: absolute;
+        left: 188px;
+        top: 1010px;
+        width: 704px;
+      }
+      #chest .top {
+        width: 704px;
+        height: 284px;
+        background: url(assets/mc/gui/generic_54.png) 0 0 / 1024px 1024px;
+      }
+      #chest .bot {
+        width: 704px;
+        height: 28px;
+        background: url(assets/mc/gui/generic_54.png) 0 -860px / 1024px 1024px;
+      }
+      #chest .name {
+        position: absolute;
+        left: 32px;
+        top: 20px;
+      }
+      #chest .item {
+        position: absolute;
+        width: 64px;
+        height: 64px;
+      }
+      #chest .item img {
+        width: 64px;
+        height: 64px;
+      }
+      #chest .item canvas {
+        position: absolute;
+        right: -10px;
+        bottom: -12px;
+      }
+      /* First-person HUD */
+      #hud {
+        position: absolute;
+        inset: 0;
+      }
+      #crosshair {
+        position: absolute;
+        left: 510px;
+        top: 930px;
+        width: 60px;
+        height: 60px;
+      }
+      #hotbar {
+        position: absolute;
+        left: 176px;
+        top: 1228px;
+        width: 728px;
+        height: 88px;
+      }
+      #hotsel {
+        position: absolute;
+        left: 172px;
+        top: 1224px;
+        width: 96px;
+        height: 96px;
+      }
+      #chat {
+        position: absolute;
+        left: 24px;
+        top: 1050px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #chat .line {
+        padding: 2px 8px;
+        background: rgba(0, 0, 0, 0.45);
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1340px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.85);
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 30px;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="11"
+      data-width="1080"
+      data-height="1920"
+    >
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="11"
+        data-track-index="0"
+      ></canvas>
+
+      <div id="t1" class="title clip" data-start="0" data-duration="3.2" data-track-index="1">
+        <h1>El banco<br />del pueblo</h1>
+        <p>explicado en Minecraft</p>
+      </div>
+      <div
+        id="t2"
+        class="title clip"
+        data-start="6.0"
+        data-duration="2.9"
+        data-track-index="1"
+        style="top: 300px"
+      >
+        <h1>1 de cada 10</h1>
+        <p>los otros 9 se prestan</p>
+      </div>
+
+      <div id="toast" class="clip" data-start="4.4" data-duration="1.6" data-track-index="2">
+        <img class="bg" src="assets/mc/gui/advancement.png" alt="" />
+        <img class="ico" src="assets/mc/item/paper.png" alt="" />
+        <canvas
+          class="mc"
+          data-text="Objeto nuevo"
+          data-scale="4"
+          data-color="#ffff55"
+          style="top: 18px"
+        ></canvas>
+        <canvas class="mc" data-text="Vale de papel" data-scale="4" style="top: 66px"></canvas>
+      </div>
+      <div id="pickup" class="clip" data-start="3.6" data-duration="1.4" data-track-index="2">
+        <canvas class="mc" data-text="+30" data-scale="6"></canvas>
+        <img src="assets/mc/item/diamond.png" alt="" />
+      </div>
+
+      <div id="chest" class="clip" data-start="6.8" data-duration="2.1" data-track-index="2">
+        <div class="top"></div>
+        <div class="bot"></div>
+        <canvas
+          class="mc name"
+          data-text="Cofre de Brayan"
+          data-scale="4"
+          data-color="#404040"
+          data-shadow="0"
+        ></canvas>
+      </div>
+
+      <div id="hud" class="clip" data-start="8.9" data-duration="2.1" data-track-index="3">
+        <img id="crosshair" src="assets/mc/gui/crosshair.png" alt="" />
+        <img id="hotbar" src="assets/mc/gui/hotbar.png" alt="" />
+        <img id="hotsel" src="assets/mc/gui/hotbar_selection.png" alt="" />
+        <img
+          src="assets/mc/item/diamond.png"
+          alt=""
+          style="position: absolute; left: 188px; top: 1240px; width: 64px; height: 64px"
+        />
+        <div id="chat">
+          <div class="line" id="ch1">
+            <canvas
+              class="mc"
+              data-text="Pipe ha depositado 30 diamantes"
+              data-scale="4"
+              data-color="#ffff55"
+            ></canvas>
+          </div>
+          <div class="line" id="ch2">
+            <canvas class="mc" data-text="<Brayan> Son 3 vales, gracias" data-scale="4"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="11" data-track-index="4">
+        LilPipeTv
+      </div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="11"
+        data-track-index="5"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="11"
+        data-track-index="6"
+        data-volume="0.16"
+        data-fade-out="1"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+      const tl = gsap.timeline({ paused: true });
+      tl.set(["#ch1", "#ch2"], { opacity: 0 }, 0);
+      // Soft title entrances, like the reference: fade + slight rise.
+      tl.fromTo(
+        "#t1",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" },
+        0.0,
+      );
+      tl.to("#t1", { opacity: 0, duration: 0.3 }, 2.9);
+      tl.fromTo(
+        "#t2",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
+        6.0,
+      );
+      tl.to("#t2", { opacity: 0, duration: 0.3 }, 8.6);
+      tl.fromTo("#toast", { x: 700 }, { x: 0, duration: 0.3, ease: "power2.out" }, 4.4);
+      tl.to("#toast", { x: 700, duration: 0.3, ease: "power2.in" }, 5.7);
+      tl.fromTo(
+        "#pickup",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: -30, duration: 0.6, ease: "power2.out" },
+        3.6,
+      );
+      tl.to("#pickup", { opacity: 0, y: -70, duration: 0.4 }, 4.6);
+      tl.fromTo(
+        "#chest",
+        { opacity: 0, scale: 0.96 },
+        { opacity: 1, scale: 1, duration: 0.15 },
+        6.8,
+      );
+      tl.to("#ch1", { opacity: 1, duration: 0.05 }, 9.1);
+      tl.to("#ch2", { opacity: 1, duration: 0.05 }, 9.7);
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "./lib/three.module.js";
+      import {
+        loadTex,
+        loadImg,
+        blockMaterials,
+        Blocks,
+        makePlayer,
+        makeArm,
+        paintSkin,
+        hash,
+        drawText,
+      } from "./lib/mc.js";
+      import { EffectComposer } from "./lib/post/EffectComposer.js";
+      import { RenderPass } from "./lib/post/RenderPass.js";
+      import { BokehPass } from "./lib/post/BokehPass.js";
+      import { UnrealBloomPass } from "./lib/post/UnrealBloomPass.js";
+      import { OutputPass } from "./lib/post/OutputPass.js";
+
+      // ---------- game-font text ----------
+      const texts = [...document.querySelectorAll("canvas.mc")].map((c) =>
+        drawText(c, c.dataset.text, {
+          dir: "assets/mc/gui",
+          scale: parseFloat(c.dataset.scale || 4),
+          color: c.dataset.color || "#ffffff",
+          shadow: c.dataset.shadow !== "0",
+        }),
+      );
+      // Chest contents: ten stacks of 10 diamonds in the first slots.
+      const chest = document.getElementById("chest");
+      for (let i = 0; i < 10; i++) {
+        const slot = document.createElement("div");
+        slot.className = "item";
+        slot.style.left = 32 + (i % 9) * 72 + "px";
+        slot.style.top = 72 + Math.floor(i / 9) * 72 + "px";
+        slot.innerHTML =
+          '<img src="assets/mc/item/diamond.png" alt="" /><canvas class="mc"></canvas>';
+        chest.appendChild(slot);
+        texts.push(
+          drawText(slot.querySelector("canvas"), "10", { dir: "assets/mc/gui", scale: 4 }),
+        );
+      }
+
+      // ---------- skins ----------
+      const PIPE = {
+        skin: "#c98f6e",
+        skinD: "#b07a5b",
+        skinL: "#d9a283",
+        hair: "#2a1c12",
+        hairL: "#3b2818",
+      };
+      const pipeSkin = paintSkin((part, face, x, y) => {
+        const n = hash(x, y, part.length * 7 + face.length);
+        const S = n < 0.2 ? PIPE.skinD : n > 0.85 ? PIPE.skinL : PIPE.skin;
+        const hair = n < 0.3 ? PIPE.hairL : PIPE.hair;
+        if (part === "head") {
+          if (face === "top") return hair;
+          if (face === "back") return y < 6 ? hair : PIPE.skinD;
+          if (face === "left" || face === "right") return y < 3 ? hair : y === 3 ? "#121212" : S;
+          if (face === "bottom") return PIPE.skinD;
+          if (y < 2) return hair;
+          if (y === 2) return x === 0 || x === 7 ? hair : S;
+          if (y === 3) return x === 1 || x === 2 || x === 5 || x === 6 ? "#f2a33a" : "#121212";
+          if (y === 4) return x === 1 || x === 2 || x === 5 || x === 6 ? "#c9741c" : S;
+          if (y === 6) return x >= 2 && x <= 5 ? "#a4584a" : S;
+          return S;
+        }
+        if (part === "body") {
+          if (y === 10) return face === "front" && (x === 3 || x === 4) ? "#6b6b6b" : "#151515";
+          if (y === 11) return "#e6e6ea";
+          if (face === "front" && (y === 5 || y === 7) && x > 1 && x < 6) return PIPE.skinD;
+          return S;
+        }
+        if (part.startsWith("leg"))
+          return y < 5 ? (y === 4 ? "#c9c9cf" : "#ececf0") : y === 11 ? PIPE.skinD : S;
+        return S;
+      });
+      // Brayan as the banker: suit, red tie.
+      const BR = {
+        skin: "#d9a07a",
+        skinD: "#c08a66",
+        cap: "#d63a32",
+        capD: "#a82a24",
+        suit: "#1d1f26",
+        suitL: "#2a2d36",
+      };
+      const brayanSkin = paintSkin((part, face, x, y) => {
+        const n = hash(x, y, part.length * 11 + face.length);
+        if (part === "head") {
+          if (face === "top") return n < 0.3 ? BR.capD : BR.cap;
+          if (face === "back") return y < 2 ? BR.cap : y < 4 ? BR.capD : "#3a2214";
+          if (face === "left" || face === "right")
+            return y < 2 ? BR.cap : y < 4 ? "#3a2214" : BR.skin;
+          if (face === "bottom") return BR.skinD;
+          if (y < 2) return y === 0 ? BR.cap : BR.capD;
+          if (y === 2) return x === 1 || x === 2 || x === 5 || x === 6 ? "#3a2214" : BR.skin;
+          if (y === 3 || y === 4) {
+            if (!(x === 1 || x === 2 || x === 5 || x === 6)) return BR.skin;
+            return y === 4 && (x === 2 || x === 6) ? "#111111" : "#ffffff";
+          }
+          if (y === 6) return x >= 2 && x <= 5 ? "#7a2a1a" : BR.skin;
+          return y === 7 ? BR.skinD : BR.skin;
+        }
+        if (part === "body") {
+          if (face === "front" && (x === 3 || x === 4))
+            return y < 2 ? "#f4f4f6" : y < 9 ? "#c0221a" : BR.suit;
+          if (face === "front" && (x === 2 || x === 5) && y < 3) return "#f4f4f6";
+          return n < 0.15 ? BR.suitL : BR.suit;
+        }
+        if (part.startsWith("arm")) return y > 10 ? BR.skin : n < 0.15 ? BR.suitL : BR.suit;
+        return y > 10 ? "#111111" : BR.suit;
+      });
+      const skinFromImg = async (path) => {
+        const img = await loadImg(path);
+        const c = document.createElement("canvas");
+        c.width = c.height = 64;
+        c.getContext("2d").drawImage(img, 0, 0);
+        return c;
+      };
+
+      // ---------- renderer, sky, light ----------
+      const canvas = document.getElementById("world");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: false,
+        preserveDrawingBuffer: true,
+      });
+      renderer.setPixelRatio(1);
+      renderer.setSize(1080, 1920, false);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.3;
+      const scene = new THREE.Scene();
+      // Sunset sky: purple overhead fading to warm pink at the horizon.
+      const skyC = document.createElement("canvas");
+      skyC.width = 4;
+      skyC.height = 256;
+      {
+        const g = skyC.getContext("2d");
+        const grad = g.createLinearGradient(0, 0, 0, 256);
+        grad.addColorStop(0, "#4a3f78");
+        grad.addColorStop(0.45, "#9a72a8");
+        grad.addColorStop(0.7, "#e2a0a0");
+        grad.addColorStop(1, "#f4c9a2");
+        g.fillStyle = grad;
+        g.fillRect(0, 0, 4, 256);
+      }
+      const skyTex = new THREE.CanvasTexture(skyC);
+      skyTex.colorSpace = THREE.SRGBColorSpace;
+      scene.background = skyTex;
+      scene.fog = new THREE.Fog("#d9a6a8", 22, 70);
+      const camera = new THREE.PerspectiveCamera(60, 1080 / 1920, 0.05, 200);
+      scene.add(camera);
+      scene.add(new THREE.HemisphereLight("#d9c8ff", "#7a6a4a", 1.7));
+      const sun = new THREE.DirectionalLight("#ffc68a", 3.0);
+      sun.position.set(13, 11, 12);
+      sun.castShadow = true;
+      sun.shadow.mapSize.set(2048, 2048);
+      sun.shadow.bias = -0.0006;
+      sun.shadow.radius = 4;
+      Object.assign(sun.shadow.camera, {
+        left: -18,
+        right: 18,
+        top: 18,
+        bottom: -18,
+        near: 1,
+        far: 60,
+      });
+      scene.add(sun);
+
+      // ---------- materials ----------
+      const mats = await blockMaterials("assets/mc/block");
+      const L = async (n, extra = {}) =>
+        new THREE.MeshLambertMaterial({ map: await loadTex(`assets/mc/block/${n}.png`), ...extra });
+      const M = {
+        black: await L("polished_blackstone_bricks"),
+        blackTop: await L("polished_blackstone"),
+        gold: await L("gold_block", { emissive: "#3a2a00" }),
+        redWool: await L("red_wool"),
+        whiteWool: await L("white_wool"),
+        spruce: await L("spruce_planks"),
+        bars: await L("iron_bars", { transparent: true, alphaTest: 0.5 }),
+        barrelSide: await L("barrel_side"),
+        barrelTop: await L("barrel_top"),
+        stoneBricks: await L("stone_bricks"),
+      };
+      const pathTop = await L("dirt_path_top"),
+        pathSide = await L("dirt_path_side");
+      const pathMat = [pathSide, pathSide, pathTop, mats.dirt, pathSide, pathSide];
+      const barrel = [
+        M.barrelSide,
+        M.barrelSide,
+        M.barrelTop,
+        M.barrelTop,
+        M.barrelSide,
+        M.barrelSide,
+      ];
+
+      // ---------- the village ----------
+      const B = new Blocks(scene);
+      const pathCell = (x, z) =>
+        (Math.abs(x) <= 1 && z >= -3 && z <= 14) || (Math.abs(z - 4) <= 0 && x >= -9 && x <= 9);
+      for (let x = -20; x <= 20; x++)
+        for (let z = -24; z <= 20; z++) B.add(pathCell(x, z) ? pathMat : mats.grass, x, -0.5, z);
+      // The bank: blackstone walls, a 3-wide doorway under three gold blocks, barred windows.
+      for (let x = -3; x <= 3; x++)
+        for (let z = -9; z <= -3; z++)
+          for (let y = 0; y < 5; y++) {
+            const edge = Math.abs(x) === 3 || z === -9 || z === -3;
+            if (!edge) continue;
+            if (z === -3 && Math.abs(x) <= 1 && y < 3) continue; // doorway
+            if (z === -3 && Math.abs(x) <= 1 && y === 3) {
+              B.add(M.gold, x, y + 0.5, z);
+              continue;
+            }
+            if (Math.abs(x) === 3 && y === 2 && (z === -5 || z === -7)) {
+              B.add(M.bars, x, y + 0.5, z);
+              continue;
+            }
+            B.add(M.black, x, y + 0.5, z);
+          }
+      for (let x = -3; x <= 3; x++) for (let z = -9; z <= -3; z++) B.add(M.blackTop, x, 5.5, z);
+      for (let x = -2; x <= 2; x++) for (let z = -8; z <= -4; z++) B.add(M.stoneBricks, x, -0.5, z);
+      // Counter of gold blocks inside, barrels in the corners.
+      [-1, 0, 1].forEach((x) => B.add(M.gold, x, 0.5, -6));
+      B.add(barrel, -2, 0.5, -8);
+      B.add(barrel, 2, 0.5, -8);
+      B.add(barrel, 2, 1.5, -8);
+      // Plank houses with log corners.
+      const house = (cx, cz, w, d, h) => {
+        for (let x = 0; x < w; x++)
+          for (let z = 0; z < d; z++)
+            for (let y = 0; y < h; y++) {
+              const edge = x === 0 || z === 0 || x === w - 1 || z === d - 1;
+              if (!edge) continue;
+              const corner = (x === 0 || x === w - 1) && (z === 0 || z === d - 1);
+              if (z === d - 1 && x === Math.floor(w / 2) && y < 2) continue;
+              B.add(corner ? mats.log : mats.planks, cx + x, y + 0.5, cz + z);
+            }
+        for (let x = -1; x <= w; x++)
+          for (let z = -1; z <= d; z++) B.add(M.spruce, cx + x, h + 0.5, cz + z);
+      };
+      house(-11, -8, 5, 5, 4);
+      house(6, -9, 5, 5, 4);
+      house(-12, 6, 5, 5, 4);
+      house(8, 7, 5, 4, 3);
+      // Market stall with a striped wool awning.
+      for (const [x, z] of [
+        [4, 1],
+        [7, 1],
+        [4, 3],
+        [7, 3],
+      ])
+        for (let y = 0; y < 3; y++) B.add(mats.log, x, y + 0.5, z);
+      for (let x = 4; x <= 7; x++)
+        for (let z = 1; z <= 3; z++) B.add(x % 2 ? M.redWool : M.whiteWool, x, 3.5, z);
+      B.add(barrel, 5, 0.5, 2);
+      B.add(barrel, 6, 0.5, 2);
+      // Oak trees.
+      const tree = (x, z, h) => {
+        for (let y = 0; y < h; y++) B.add(mats.log, x, y + 0.5, z);
+        for (let dx = -2; dx <= 2; dx++)
+          for (let dz = -2; dz <= 2; dz++)
+            for (let dy = 0; dy < 2; dy++) {
+              if (Math.abs(dx) === 2 && Math.abs(dz) === 2 && hash(dx, dz, x + z) < 0.6) continue;
+              B.add(mats.leaves, x + dx, h - 1.5 + dy, z + dz);
+            }
+        [
+          [0, 0],
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ].forEach(([dx, dz]) => B.add(mats.leaves, x + dx, h + 0.5, z + dz));
+      };
+      tree(-6, -14, 5);
+      tree(9, -15, 5);
+      tree(-15, -2, 4);
+      tree(14, 0, 5);
+      tree(-4, 12, 4);
+      B.flush();
+      // Lantern glow at the bank door and the stall.
+      [
+        [-2, 2.6, -2.4],
+        [2, 2.6, -2.4],
+        [5.5, 2.6, 2],
+      ].forEach(([x, y, z]) => {
+        const l = new THREE.PointLight("#ffb05a", 2.2, 7, 1.5);
+        l.position.set(x, y, z);
+        scene.add(l);
+        const g = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 0.38, 0.3),
+          new THREE.MeshBasicMaterial({ color: "#ffd27a" }),
+        );
+        g.position.set(x, y, z);
+        scene.add(g);
+      });
+
+      [
+        [-2.2, 3.4, -5.5],
+        [2.2, 3.4, -5.5],
+        [0, 3.6, -7.8],
+      ].forEach(([x, y, z]) => {
+        const l = new THREE.PointLight("#ffc070", 4, 8, 1.2);
+        l.position.set(x, y, z);
+        scene.add(l);
+        const g = new THREE.Mesh(
+          new THREE.BoxGeometry(0.3, 0.38, 0.3),
+          new THREE.MeshBasicMaterial({ color: "#ffd27a" }),
+        );
+        g.position.set(x, y, z);
+        scene.add(g);
+      });
+
+      // ---------- characters with name tags ----------
+      async function nameTag(text) {
+        const c = document.createElement("canvas");
+        await drawText(c, text, { dir: "assets/mc/gui", scale: 4, shadow: false });
+        const bg = document.createElement("canvas");
+        bg.width = c.width + 16;
+        bg.height = c.height + 4;
+        const g = bg.getContext("2d");
+        g.fillStyle = "rgba(0,0,0,0.25)";
+        g.fillRect(0, 0, bg.width, bg.height);
+        g.drawImage(c, 8, 4);
+        const tex = new THREE.CanvasTexture(bg);
+        tex.magFilter = tex.minFilter = THREE.NearestFilter;
+        tex.colorSpace = THREE.SRGBColorSpace;
+        const s = new THREE.Sprite(
+          new THREE.SpriteMaterial({ map: tex, depthWrite: false, fog: false }),
+        );
+        s.scale.set(bg.width / 260, bg.height / 260, 1);
+        return s;
+      }
+      async function person(skin, name) {
+        const p = makePlayer(skin);
+        p.group.scale.setScalar(0.9);
+        const tag = await nameTag(name);
+        tag.position.y = 2.45;
+        p.group.add(tag);
+        scene.add(p.group);
+        return p;
+      }
+      const pipe = await person(pipeSkin, "Pipe");
+      const brayan = await person(brayanSkin, "Brayan");
+      const npcs = await Promise.all([
+        person(await skinFromImg("assets/mc/skins/ari.png"), "Lucía"),
+        person(await skinFromImg("assets/mc/skins/kai.png"), "Javi"),
+        person(await skinFromImg("assets/mc/skins/noor.png"), "Sara"),
+        person(await skinFromImg("assets/mc/skins/alex.png"), "Toni"),
+      ]);
+      // First-person arm.
+      const arm = makeArm(pipeSkin);
+      camera.add(arm);
+
+      // ---------- post: depth of field + soft bloom ----------
+      const composer = new EffectComposer(renderer);
+      composer.setPixelRatio(1);
+      composer.setSize(1080, 1920);
+      composer.addPass(new RenderPass(scene, camera));
+      const bokeh = new BokehPass(scene, camera, { focus: 10, aperture: 0.004, maxblur: 0.012 });
+      composer.addPass(bokeh);
+      composer.addPass(new UnrealBloomPass(new THREE.Vector2(540, 960), 0.25, 0.6, 0.85));
+      composer.addPass(new OutputPass());
+
+      // ---------- motion ----------
+      const lerp = (a, b, k) => a + (b - a) * k;
+      const prog = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)));
+      const smooth = (k) => k * k * (3 - 2 * k);
+      const walk = (p, t, speed = 7, amp = 0.55) => {
+        const s = Math.sin(t * speed) * amp;
+        p.legL.rotation.x = s;
+        p.legR.rotation.x = -s;
+        p.armL.rotation.x = -s * 0.7;
+        p.armR.rotation.x = s * 0.7;
+      };
+      // NPC routes [x0, z0, x1, z1, speed offset].
+      const ROUTES = [
+        [-9, 4, -3, 4, 0],
+        [-3.5, 13, -3.5, 1.5, 1.3],
+        [9, 4.6, 3, 4.6, 2.1],
+        [-6, -1, -6, 9, 0.7],
+      ];
+      function actors(t) {
+        npcs.forEach((p, i) => {
+          p.reset();
+          p.group.scale.setScalar(0.9);
+          const [x0, z0, x1, z1, o] = ROUTES[i];
+          const k = (((t * 0.09 + o * 0.17) % 1) + 1) % 1;
+          p.group.position.set(lerp(x0, x1, k), 0, lerp(z0, z1, k));
+          p.group.rotation.y = Math.atan2(x1 - x0, z1 - z0);
+          walk(p, t + i, 7, 0.55);
+        });
+        // Pipe walks up the path to the bank.
+        pipe.reset();
+        pipe.group.scale.setScalar(0.9);
+        const pk = prog(t, 0, 6.0);
+        pipe.group.position.set(0.3, 0, lerp(7, -1.6, pk));
+        pipe.group.rotation.y = Math.PI;
+        walk(pipe, t, 7, 0.55);
+        pipe.group.visible = t < 8.9;
+        // Brayan the banker behind the gold counter.
+        brayan.reset();
+        brayan.group.scale.setScalar(0.9);
+        brayan.group.position.set(0, 0, -7.0);
+        brayan.head.rotation.y = Math.sin(t * 1.3) * 0.15;
+        brayan.armR.rotation.x = t > 7.0 && t < 8.5 ? -0.6 : 0;
+        brayan.group.children[brayan.group.children.length - 1].visible = !(t >= 6.0 && t < 8.9);
+      }
+
+      // [start, end, pos0, look0, pos1, look1, fov, focus]
+      const shots = [
+        [0, 3.2, [-5, 12, 21], [0, 1.5, -5], [-3.5, 9.5, 16], [0, 1.5, -5], 52, 20],
+        [3.2, 6.0, [2.2, 0.75, 5.2], [0.4, 1.3, 1.6], [1.9, 0.8, 4.0], [0.4, 1.3, 0.2], 50, 3.6],
+        [6.0, 8.9, [1.0, 2.15, -3.4], [0, 1.15, -7], [0.7, 2.1, -3.8], [0, 1.15, -7], 58, 3.6],
+        [8.9, 11, [0.3, 1.62, 3.0], [0, 1.6, -5], [0.3, 1.62, 2.4], [0, 1.6, -5], 70, 8],
+      ];
+      const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2]);
+      function cam(t) {
+        const s = shots.find((x) => t >= x[0] && t < x[1]) || shots[shots.length - 1];
+        const k = smooth(prog(t, s[0], s[1]));
+        camera.position.copy(v3(s[2]).lerp(v3(s[4]), k));
+        camera.lookAt(v3(s[3]).lerp(v3(s[5]), k));
+        camera.fov = s[6];
+        camera.updateProjectionMatrix();
+        bokeh.uniforms.focus.value = s[7];
+        bokeh.uniforms.aperture.value = s[0] === 8.9 ? 0.0012 : s[0] === 0 ? 0.0025 : 0.005;
+        const fp = t >= 8.9;
+        arm.visible = fp;
+        if (fp) {
+          arm.scale.setScalar(0.55);
+          arm.position.set(0.16, -0.16 + Math.abs(Math.sin(t * 3)) * 0.01, -0.42);
+          arm.rotation.set(-1.75, 0.45, 0.35);
+        }
+      }
+
+      function renderAt(t) {
+        actors(t);
+        cam(t);
+        composer.render();
+      }
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      await Promise.all(texts);
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
