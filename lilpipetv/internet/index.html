@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="lib/gsap.min.js"></script>
+    <style>
+      :root {
+        --ink: #ffffff;
+        --stroke: #1b1b1b;
+        --bad: #ff3b2f;
+        --good: #3ed16a;
+        --font-display: "Archivo Black", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #120604;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: var(--font-display);
+        background: #120604;
+      }
+      #world {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 45%,
+          rgba(0, 0, 0, 0) 52%,
+          rgba(0, 0, 0, 0.5) 100%
+        );
+      }
+      #pov {
+        position: absolute;
+        left: 70px;
+        right: 70px;
+        top: 200px;
+        text-align: center;
+      }
+      #pov span {
+        display: inline-block;
+        color: var(--ink);
+        font-size: 66px;
+        line-height: 1.1;
+        -webkit-text-stroke: 16px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 8px 0 var(--stroke);
+      }
+      /* Ping HUD */
+      #ping {
+        position: absolute;
+        right: 80px;
+        top: 400px;
+        display: flex;
+        align-items: flex-end;
+        gap: 14px;
+        padding: 12px 18px;
+        background: rgba(0, 0, 0, 0.55);
+        border: 5px solid var(--stroke);
+      }
+      #ping .bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 5px;
+      }
+      #ping .bars i {
+        display: block;
+        width: 10px;
+        background: var(--good);
+      }
+      #ping b {
+        font-weight: normal;
+        font-size: 38px;
+        line-height: 1;
+        color: var(--good);
+      }
+      #ping.bad .bars i {
+        background: var(--bad);
+      }
+      #ping.bad .bars i:nth-child(n + 2) {
+        background: #555;
+      }
+      #ping.bad b {
+        color: var(--bad);
+      }
+      /* Loading spinner while frozen */
+      #spinner {
+        position: absolute;
+        left: 50%;
+        top: 820px;
+        width: 150px;
+        height: 150px;
+        margin-left: -75px;
+        border-radius: 50%;
+        border: 18px solid rgba(255, 255, 255, 0.25);
+        border-top-color: #ffffff;
+      }
+      #frozen {
+        position: absolute;
+        inset: 0;
+        background: rgba(20, 20, 30, 0.35);
+        opacity: 0;
+      }
+      #dead {
+        position: absolute;
+        inset: 0;
+        background: rgba(170, 10, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #dead span {
+        color: #fff;
+        font-size: 150px;
+        -webkit-text-stroke: 26px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 14px 0 var(--stroke);
+      }
+      .stage {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 560px;
+        display: flex;
+        justify-content: center;
+      }
+      .stage span {
+        display: block;
+        padding: 16px 32px 10px;
+        background: #ffd23f;
+        color: var(--stroke);
+        font-size: 64px;
+        line-height: 1;
+        border: 9px solid var(--stroke);
+        box-shadow: 0 12px 0 var(--stroke);
+      }
+      /* In-game chat */
+      #chat {
+        position: absolute;
+        left: 50px;
+        top: 760px;
+        width: 760px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      #chat p {
+        padding: 6px 14px;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 36px;
+        line-height: 1.15;
+      }
+      #chat p .who {
+        color: #8fd3ff;
+      }
+      #chat p .br {
+        color: #ffd23f;
+      }
+      #typing {
+        position: absolute;
+        left: 50px;
+        top: 1050px;
+        width: 760px;
+        padding: 8px 14px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 4px solid #8a8a8a;
+        color: #fff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 38px;
+      }
+      #lost {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, #1b1d24 0%, #2a2c36 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        text-align: center;
+      }
+      #lost h1 {
+        font-weight: normal;
+        color: #fff;
+        font-size: 84px;
+        line-height: 1.05;
+      }
+      #lost p {
+        color: #b9bcc8;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 40px;
+      }
+      #lost .btn {
+        padding: 22px 60px;
+        background: #6a6e7a;
+        border: 6px solid #111;
+        color: #fff;
+        font-size: 48px;
+      }
+      #bar {
+        width: 700px;
+        height: 34px;
+        background: #3a3d48;
+        border: 5px solid #111;
+      }
+      #bar i {
+        display: block;
+        height: 100%;
+        width: 100%;
+        background: var(--good);
+        transform-origin: left center;
+      }
+      #ok {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 560px;
+        display: flex;
+        justify-content: center;
+      }
+      #ok span {
+        display: block;
+        padding: 16px 32px 10px;
+        background: var(--good);
+        color: #fff;
+        font-size: 60px;
+        border: 9px solid var(--stroke);
+        box-shadow: 0 12px 0 var(--stroke);
+      }
+      .cap {
+        position: absolute;
+        left: 60px;
+        right: 60px;
+        top: 1180px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
+      .cap span {
+        display: inline-block;
+        color: #ffd23f;
+        font-size: 70px;
+        line-height: 1.1;
+        -webkit-text-stroke: 15px var(--stroke);
+        paint-order: stroke fill;
+        text-shadow: 0 7px 0 var(--stroke);
+      }
+      #mark {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 1300px;
+        text-align: center;
+        color: #ffffff;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 34px;
+        line-height: 1;
+        -webkit-text-stroke: 7px #1b1b1b;
+        paint-order: stroke fill;
+      }
+      #flash {
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="24.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <canvas
+        id="world"
+        class="clip"
+        width="1080"
+        height="1920"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="0"
+      ></canvas>
+      <div
+        id="vignette"
+        class="clip"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="1"
+      ></div>
+      <div id="frozen" class="clip" data-start="0" data-duration="24.5" data-track-index="1"></div>
+
+      <div id="pov" class="clip" data-start="0" data-duration="24.5" data-track-index="2">
+        <span>POV: se te cae el internet en Minecraft</span>
+      </div>
+      <div id="ping" class="clip" data-start="0" data-duration="17.5" data-track-index="3">
+        <div class="bars">
+          <i style="height: 14px"></i><i style="height: 24px"></i><i style="height: 34px"></i
+          ><i style="height: 44px"></i>
+        </div>
+        <b id="ping-ms">12 ms</b>
+      </div>
+      <div
+        id="ping2"
+        class="clip"
+        data-start="21.0"
+        data-duration="3.5"
+        data-track-index="3"
+        style="
+          position: absolute;
+          right: 80px;
+          top: 400px;
+          display: flex;
+          align-items: flex-end;
+          gap: 14px;
+          padding: 12px 18px;
+          background: rgba(0, 0, 0, 0.55);
+          border: 5px solid #1b1b1b;
+        "
+      >
+        <div style="display: flex; align-items: flex-end; gap: 5px">
+          <i style="display: block; width: 10px; height: 14px; background: #3ed16a"></i
+          ><i style="display: block; width: 10px; height: 24px; background: #3ed16a"></i
+          ><i style="display: block; width: 10px; height: 34px; background: #3ed16a"></i
+          ><i style="display: block; width: 10px; height: 44px; background: #3ed16a"></i>
+        </div>
+        <b style="font-weight: normal; font-size: 38px; line-height: 1; color: #3ed16a">12 ms</b>
+      </div>
+
+      <div id="spin1" class="clip" data-start="1.3" data-duration="1.1" data-track-index="4">
+        <div id="spinner"></div>
+      </div>
+      <div id="spin2" class="clip" data-start="16.6" data-duration="0.9" data-track-index="4">
+        <div
+          id="spinner2"
+          style="
+            position: absolute;
+            left: 50%;
+            top: 820px;
+            width: 150px;
+            height: 150px;
+            margin-left: -75px;
+            border-radius: 50%;
+            border: 18px solid rgba(255, 255, 255, 0.25);
+            border-top-color: #fff;
+          "
+        ></div>
+      </div>
+      <div id="dead" class="clip" data-start="3.55" data-duration="0.65" data-track-index="5">
+        <span>MORISTE</span>
+      </div>
+
+      <div id="st1" class="stage clip" data-start="4.3" data-duration="2.0" data-track-index="5">
+        <span>PONES 1 BLOQUE…</span>
+      </div>
+      <div id="st2" class="stage clip" data-start="8.7" data-duration="1.6" data-track-index="5">
+        <span>ESCRIBES EN EL CHAT…</span>
+      </div>
+      <div id="st3" class="stage clip" data-start="12.9" data-duration="1.4" data-track-index="5">
+        <span>Y TU AMIGO…</span>
+      </div>
+
+      <div id="chat" class="clip" data-start="8.6" data-duration="4.2" data-track-index="6">
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p class="flood"><span class="who">&lt;Pipe&gt;</span> ayuda</p>
+        <p id="r1"><span class="br">&lt;Brayan&gt;</span> ¿todo bien bro?</p>
+        <p id="r2"><span class="br">&lt;Brayan&gt;</span> ???</p>
+      </div>
+      <div id="typing" class="clip" data-start="8.9" data-duration="1.6" data-track-index="6">
+        <span id="typed">ayuda</span>_
+      </div>
+
+      <div id="lost" class="clip" data-start="17.5" data-duration="3.5" data-track-index="7">
+        <h1 id="lost-h">Se perdió la<br />conexión</h1>
+        <p id="lost-p">Tiempo de espera agotado</p>
+        <div class="btn" id="lost-btn">Volver al menú</div>
+        <p id="recon">Reconectando…</p>
+        <div id="bar"><i id="bar-fill"></i></div>
+      </div>
+      <div id="ok" class="clip" data-start="21.05" data-duration="1.2" data-track-index="7">
+        <span>CONECTADO</span>
+      </div>
+
+      <div id="c1" class="cap clip" data-start="2.45" data-duration="1.1" data-track-index="8">
+        <span>¡NO, NO, NO, NO!</span>
+      </div>
+      <div id="c2" class="cap clip" data-start="6.55" data-duration="1.4" data-track-index="8">
+        <span>¿QUÉ?</span>
+      </div>
+      <div id="c3" class="cap clip" data-start="17.75" data-duration="1.7" data-track-index="8">
+        <span>¡NOOOO!</span>
+      </div>
+
+      <div id="mark" class="clip" data-start="0" data-duration="24.5" data-track-index="9">
+        LilPipeTv
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="24.5" data-track-index="10"></div>
+
+      <audio
+        id="voice"
+        class="clip"
+        src="assets/voice.wav"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="11"
+        data-volume="1"
+      ></audio>
+      <audio
+        id="sfx"
+        class="clip"
+        src="assets/sfx.wav"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="12"
+        data-volume="0.55"
+      ></audio>
+      <audio
+        id="music"
+        class="clip"
+        src="assets/music.wav"
+        data-start="0"
+        data-duration="24.5"
+        data-track-index="13"
+        data-volume="0.2"
+      ></audio>
+    </div>
+
+    <script>
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["world"] = new Promise((resolve) => {
+        window.__worldReady = resolve;
+      });
+      const tl = gsap.timeline({ paused: true });
+      tl.set(["#flash", "#frozen"], { opacity: 0 }, 0);
+      tl.set(".flood", { opacity: 0 }, 0);
+      tl.set(["#r1", "#r2", "#recon", "#bar"], { opacity: 0 }, 0);
+      const slam = (sel, at, rot = -2) =>
+        tl.fromTo(
+          sel,
+          { scale: 2.4, opacity: 0, rotation: rot * 3 },
+          { scale: 1, opacity: 1, rotation: rot, duration: 0.14, ease: "power4.out" },
+          at,
+        );
+      // Freeze #1 (mid-jump) and the final freeze before the disconnect.
+      [
+        [1.3, 2.4],
+        [16.6, 17.5],
+      ].forEach(([a, b]) => {
+        tl.to("#frozen", { opacity: 1, duration: 0.02 }, a);
+        tl.to("#frozen", { opacity: 0, duration: 0.02 }, b);
+      });
+      tl.fromTo("#spinner", { rotation: 0 }, { rotation: 720, duration: 1.1, ease: "none" }, 1.3);
+      tl.fromTo("#spinner2", { rotation: 0 }, { rotation: 600, duration: 0.9, ease: "none" }, 16.6);
+      slam("#dead span", 3.55, -4);
+      ["#st1 span", "#st2 span", "#st3 span"].forEach((s, i) => slam(s, [4.3, 8.7, 12.9][i]));
+      // Chat: one "ayuda" sent... then the backlog floods in at once.
+      tl.fromTo(
+        "#typed",
+        { clipPath: "inset(0 100% 0 0)" },
+        { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "steps(5)" },
+        8.95,
+      );
+      document
+        .querySelectorAll(".flood")
+        .forEach((p, i) =>
+          tl.fromTo(
+            p,
+            { opacity: 0, x: -30 },
+            { opacity: 1, x: 0, duration: 0.05 },
+            10.5 + i * 0.06,
+          ),
+        );
+      tl.fromTo("#r1", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 11.4);
+      tl.fromTo("#r2", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 12.1);
+      tl.fromTo("#chat", { y: 0 }, { y: -40, duration: 0.3 }, 10.5);
+      // Disconnect screen, then reconnect.
+      tl.fromTo(
+        "#lost-h",
+        { scale: 0.85, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.2 },
+        17.5,
+      );
+      tl.to(["#lost-h", "#lost-p", "#lost-btn"], { opacity: 0, duration: 0.15 }, 19.5);
+      tl.to(["#recon", "#bar"], { opacity: 1, duration: 0.1 }, 19.6);
+      tl.fromTo("#bar-fill", { scaleX: 0 }, { scaleX: 1, duration: 1.3, ease: "steps(8)" }, 19.65);
+      slam("#ok span", 21.05, 2);
+      tl.to("#ok span", { opacity: 0, duration: 0.2 }, 22.0);
+      tl.to("#flash", { opacity: 0.8, duration: 0.03 }, 15.6);
+      tl.to("#flash", { opacity: 0, duration: 0.25 }, 15.63);
+      document.querySelectorAll(".cap").forEach((c) => {
+        tl.fromTo(
+          c.querySelector("span"),
+          { scale: 0.7, y: 14 },
+          { scale: 1, y: 0, duration: 0.12, ease: "back.out(3)" },
+          parseFloat(c.dataset.start),
+        );
+      });
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as V from "./lib/village.js";
+      import { makeBrayan } from "./lib/brayan.js";
+      const {
+        THREE,
+        scene,
+        camera,
+        renderer,
+        sun,
+        lerp,
+        smooth,
+        prog,
+        M,
+        pixelTex,
+        pal,
+        mulberry32,
+      } = V;
+      const {
+        pipe,
+        kaizen,
+        pros,
+        evaluator,
+        heldTorches,
+        floatStones,
+        hutLight,
+        lanternLights,
+        crystalLight,
+      } = V;
+      [pipe, kaizen, ...pros].forEach((c) => (c.group.visible = false));
+      evaluator.visible = false;
+      heldTorches.forEach((h) => (h.visible = false));
+      Object.values(floatStones).forEach((s) => (s.visible = false));
+      V.clouds.forEach((c) => (c.visible = false));
+      lanternLights.forEach((l) => (l.intensity = 0));
+      hutLight.intensity = 0;
+      crystalLight.intensity = 0;
+      let hemi = null;
+      scene.traverse((o) => o.isHemisphereLight && (hemi = o));
+      sun.intensity = 0;
+      if (hemi) {
+        hemi.color.set("#ffb08a");
+        hemi.groundColor.set("#3a1208");
+        hemi.intensity = 0.9;
+      }
+      scene.fog.color.set("#2a0a04");
+      scene.fog.near = 10;
+      scene.fog.far = 40;
+      scene.add(camera);
+      const pingEl = document.getElementById("ping");
+      const pingMs = document.getElementById("ping-ms");
+
+      const { brayan, pick } = makeBrayan(V);
+      pick.visible = false;
+
+      // ---------- the lava arena (x = 600) ----------
+      const A = new THREE.Vector3(600, 0, 0);
+      const box = new THREE.BoxGeometry(1, 1, 1);
+      const repeatTex = (t, rx, ry) => {
+        const c = t.clone();
+        c.repeat.set(rx, ry);
+        c.wrapS = c.wrapT = THREE.RepeatWrapping;
+        c.needsUpdate = true;
+        return c;
+      };
+      const mesh = (geo, mat, x, y, z, parent = scene) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(x, y, z);
+        m.castShadow = m.receiveShadow = true;
+        parent.add(m);
+        return m;
+      };
+      const stoneMat = M(
+        pixelTex(16, 16, 1200, (x, y, r) => pal(["#6f7076", "#7e7f86", "#8c8d94", "#5f6066"], r())),
+      );
+      const cave = new THREE.Mesh(
+        new THREE.BoxGeometry(30, 18, 34),
+        new THREE.MeshLambertMaterial({
+          map: repeatTex(
+            pixelTex(16, 16, 1201, (x, y, r) =>
+              pal(["#3a1a14", "#4a2219", "#2f150f", "#55281c"], r()),
+            ),
+            15,
+            9,
+          ),
+          side: THREE.BackSide,
+        }),
+      );
+      cave.position.set(A.x, 6, A.z - 4);
+      scene.add(cave);
+      const lavaTex = repeatTex(
+        pixelTex(16, 16, 1202, (x, y, r) => pal(["#ff5a1a", "#ff8a2a", "#ffb03a", "#e8401a"], r())),
+        14,
+        16,
+      );
+      mesh(
+        new THREE.BoxGeometry(28, 0.2, 32),
+        new THREE.MeshBasicMaterial({ map: lavaTex }),
+        A.x,
+        -1.6,
+        A.z - 4,
+      ).castShadow = false;
+      const lavaLights = [
+        [-4, -1, -4],
+        [4, -1, -8],
+        [0, -1, 2],
+      ].map(([x, y, z]) => {
+        const l = new THREE.PointLight("#ff6a20", 6, 16, 1);
+        l.position.set(A.x + x, y, A.z + z);
+        scene.add(l);
+        return l;
+      });
+      // Start platform (z 3.5..8.5) and the parkour blocks toward a goal.
+      const platform = mesh(new THREE.BoxGeometry(5, 1, 5), stoneMat, A.x, -0.5, A.z + 6);
+      const STEPS = [
+        [0, 1.0],
+        [0.3, -1.4],
+        [-0.2, -3.8],
+        [0.2, -6.2],
+      ];
+      STEPS.forEach(([x, z]) => mesh(box, stoneMat, A.x + x, -0.5, A.z + z));
+      const goal = mesh(
+        new THREE.BoxGeometry(1.2, 1.2, 1.2),
+        new THREE.MeshLambertMaterial({ color: "#5ff0ff", emissive: "#1a6a7a" }),
+        A.x,
+        0.1,
+        A.z - 8.8,
+      );
+      // Blocks that lag in all at once around Pipe.
+      const trapMat = M(
+        pixelTex(16, 16, 1203, (x, y, r) =>
+          y % 4 === 3 ? "#5a3d1e" : pal(["#b88a52", "#ad8149", "#c0935b"], r()),
+        ),
+      );
+      const trap = [
+        [1, 0.5, 0],
+        [-1, 0.5, 0],
+        [0, 0.5, 1],
+        [0, 0.5, -1],
+        [1, 1.5, 0],
+        [-1, 1.5, 0],
+        [0, 1.5, -1],
+        [0, 2.6, 0],
+      ].map(([x, y, z]) => {
+        const m = mesh(box, trapMat, A.x + x, y, A.z + 6 + z);
+        m.visible = false;
+        return m;
+      });
+
+      // ---------- Pipe's POV hands ----------
+      const hands = new THREE.Group();
+      const sleeveMat = M(
+        pixelTex(4, 12, 1210, (x, y) =>
+          y === 9 || y === 10 ? "#8fd3ff" : y > 10 ? "#d9a07a" : "#f4f4f6",
+        ),
+      );
+      const handR = new THREE.Group(),
+        handL = new THREE.Group();
+      mesh(new THREE.BoxGeometry(0.16, 0.5, 0.16), sleeveMat, 0, 0, 0, handR);
+      mesh(new THREE.BoxGeometry(0.16, 0.5, 0.16), sleeveMat, 0, 0, 0, handL);
+      const heldBlock = mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), trapMat, 0, 0.3, -0.05, handR);
+      hands.add(handR, handL);
+      camera.add(hands);
+
+      const add = (...a) => V.bursts.push(V.burst(...a));
+      const emberMat = new THREE.MeshBasicMaterial({ color: "#ffb03a" });
+      add(1300, [A.x + 0.1, -1.4, A.z - 0.6], 3.45, emberMat, 22, 2.4); // lava splash
+      add(1301, [A.x, 1.2, A.z + 5.6], 6.3, V.dustMat, 16, 1.6); // blocks pop in
+
+      // ---------- frozen-time helper ----------
+      // During a freeze the world (lava, sway, everyone) holds still.
+      const freezes = [
+        [1.3, 2.4],
+        [16.6, 17.5],
+      ];
+      function worldT(t) {
+        for (const [a, b] of freezes) if (t >= a && t < b) return a;
+        return t;
+      }
+
+      // ---------- camera ----------
+      const EYE = 1.62;
+      const startPos = new THREE.Vector3(A.x, EYE, A.z + 1.0);
+      const startLook = new THREE.Vector3(A.x - 0.05, 0.6, A.z - 8.8);
+      function cam(t, wt) {
+        const pos = startPos.clone(),
+          look = startLook.clone();
+        let fov = 62;
+        if (t < 1.0 || t >= 21.0) {
+          // Standing on the first block (this frame is also the loop point).
+          pos.y += Math.sin(wt * 2) * 0.01;
+        } else if (t < 2.7) {
+          // Jump toward block 2; frozen mid-air; rubber-banded back at 2.4.
+          const k = prog(wt, 1.0, 1.6);
+          if (t < 2.4) {
+            pos.z = lerp(A.z + 1.0, A.z - 1.4, k);
+            pos.x = lerp(A.x, A.x + 0.3, k);
+            pos.y = EYE + Math.sin(k * Math.PI) * 0.9;
+          }
+        } else if (t < 3.55) {
+          // Second try: lag spike drops him straight into the lava.
+          const k = prog(t, 2.75, 3.45);
+          pos.z = lerp(A.z + 1.0, A.z - 0.2, Math.min(1, k * 2));
+          pos.y = EYE + Math.sin(Math.min(1, k * 2) * Math.PI) * 0.4 - Math.max(0, k - 0.4) * 5.5;
+          look.y = lerp(0.6, -3, smooth(k));
+          fov = 62 + 10 * k;
+        } else if (t < 4.2) {
+          pos.set(A.x, -1.3, A.z - 0.2);
+          look.set(A.x, -1.6, A.z - 4);
+        } else if (t < 8.6) {
+          // Respawn on the platform; spam-click; trapped in a box of blocks.
+          pos.set(A.x, EYE, A.z + 6);
+          look.set(A.x - 0.6, 1.1, A.z + 3.2);
+          if (t >= 6.3) {
+            look.set(A.x, 1.0, A.z + 4);
+            fov = 74;
+          }
+        } else if (t < 12.8) {
+          pos.set(A.x + 0.4, EYE, A.z + 7.4);
+          look.set(A.x - 0.8, 1.3, A.z + 4.6);
+        } else if (t < 17.5) {
+          pos.set(A.x + 0.4, EYE, A.z + 7.4);
+          look.set(A.x - 0.6, 1.5, A.z + 4.6);
+          if (t >= 15.6 && t < 16.6) {
+            const k = Math.min(1, (t - 15.6) * 12);
+            pos.x += Math.sin(t * 90) * 0.05 * (1 - k * 0.5);
+            fov = 62 - 6 * (1 - Math.min(1, (t - 15.6) * 4));
+          }
+        }
+        camera.position.copy(pos);
+        camera.lookAt(look);
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+
+        // Hands: right holds a block; it swings on every click.
+        hands.visible = !(t >= 3.45 && t < 4.2) && !(t >= 17.5 && t < 21.0);
+        handR.position.set(0.36, -0.4, -0.62);
+        handL.position.set(-0.38, -0.46, -0.6);
+        handR.rotation.set(-0.5, 0, -0.15);
+        handL.rotation.set(-0.8, 0, 0.25);
+        if (t >= 4.6 && t < 6.2)
+          handR.rotation.x = -0.5 - Math.abs(Math.sin((t - 4.6) * Math.PI * 4)) * 0.9; // 6 clicks
+        if (t >= 2.4 && t < 3.45) {
+          handR.rotation.x = -1.6;
+          handL.rotation.x = -1.6; // flailing
+          handR.rotation.z = Math.sin(t * 30) * 0.4;
+        }
+        heldBlock.visible = t >= 4.2 && t < 8.6;
+      }
+
+      // ---------- Brayan ----------
+      function actors(t, wt) {
+        const B = brayan;
+        B.reset();
+        B.group.visible = false;
+        B.group.scale.setScalar(0.95);
+        if (t >= 4.2 && t < 12.8) {
+          B.group.visible = t < 6.3 || t >= 8.6;
+          B.group.position.set(A.x - 1.4, 0, A.z + 4.4);
+          B.group.rotation.y = Math.atan2(0.4 + 1.4, 7.4 - 4.4);
+          B.setFace(t >= 11.4 ? "scared" : "happy");
+          B.armR.rotation.z = t >= 11.4 ? 0.4 : 0;
+          B.group.position.y = Math.abs(Math.sin(t * 3)) * 0.05;
+        }
+        if (t >= 12.8 && t < 17.5) {
+          B.group.visible = true;
+          B.setFace("happy");
+          // Frozen T-pose floating mid-air.
+          const tpose = () => {
+            B.armL.rotation.z = -Math.PI / 2;
+            B.armR.rotation.z = Math.PI / 2;
+            B.legL.rotation.x = B.legR.rotation.x = 0;
+          };
+          tpose();
+          let p = [A.x - 1.0, 1.1, A.z + 4.4];
+          if (t >= 14.0) p = [A.x - 2.0, 0.4, A.z + 3.4];
+          if (t >= 14.5) p = [A.x + 1.6, 1.6, A.z + 4.0];
+          if (t >= 15.0) p = [A.x - 0.4, 2.4, A.z + 5.2];
+          if (t >= 15.6) {
+            p = [A.x + 0.38, 0.0, A.z + 6.75]; // right in Pipe's face
+            B.setFace("scared");
+          }
+          // Glitch flicker between jumps.
+          const flick =
+            [14.0, 14.5, 15.0, 15.6].some((q) => t >= q - 0.08 && t < q) && Math.sin(t * 120) > 0;
+          B.group.visible = !flick;
+          B.group.position.set(...p);
+          B.group.rotation.y = Math.atan2(0.4 - (p[0] - A.x), 7.4 - (p[2] - A.z));
+        }
+      }
+
+      function props(t, wt) {
+        lavaTex.offset.y = -wt * 0.12;
+        lavaTex.offset.x = Math.sin(wt * 0.7) * 0.05;
+        lavaLights.forEach((l, i) => (l.intensity = 6 + Math.sin(wt * 3 + i) * 0.6));
+        goal.rotation.y = wt * 0.8;
+        trap.forEach((m) => (m.visible = t >= 6.3 && t < 8.6));
+        // Ping HUD: green, then red during lag.
+        const lag =
+          (t >= 1.1 && t < 4.2) ||
+          (t >= 4.4 && t < 6.3) ||
+          (t >= 9.6 && t < 10.5) ||
+          (t >= 12.8 && t < 17.5);
+        pingEl.classList.toggle("bad", lag);
+        pingMs.textContent = lag ? (t >= 16.6 ? "9999 ms" : "999 ms") : "12 ms";
+      }
+
+      function renderAt(t) {
+        const wt = worldT(t);
+        props(t, wt);
+        actors(t, wt);
+        cam(t, wt);
+        V.renderBursts(wt);
+        renderer.render(scene, camera);
+      }
+      window.addEventListener("hf-seek", (e) => renderAt(e.detail.time));
+      renderAt(0);
+      window.__worldReady();
+    </script>
+  </body>
+</html>
